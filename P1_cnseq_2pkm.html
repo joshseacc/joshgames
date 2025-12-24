@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>訓練家句子特訓 (粉圓體版)</title>
+    
+    <style>
+        /* === 核心修改：引入 jf-openhuninn (粉圓體) === */
+        @font-face {
+            font-family: 'jf-openhuninn';
+            src: url('https://cdn.jsdelivr.net/gh/justfont/open-huninn-font@master/font/jf-openhuninn-1.1.woff2') format('woff2'),
+                 url('https://cdn.jsdelivr.net/gh/justfont/open-huninn-font@master/font/jf-openhuninn-1.1.woff') format('woff');
+            font-display: swap;
+        }
+
+        :root {
+            /* 字體優先順序：粉圓體 -> 華康兒風體 -> 系統圓體 */
+            --font-stack: 'jf-openhuninn', 'Huainn', 'Yuanti SC', 'Microsoft JhengHei', sans-serif;
+            
+            /* Pokémon 配色 */
+            --poke-red: #FF3535;
+            --poke-white: #FFFFFF;
+            --poke-black: #222224;
+            --pika-yellow: #FFCB05;
+            --poke-blue: #3B4CCA;
+            --bg-color: #F0F8FF;
+            --hp-green: #4DAD5B;
+        }
+
+        body {
+            font-family: var(--font-stack);
+            background-color: var(--bg-color);
+            /* 背景精靈球圖案 */
+            background-image: radial-gradient(#e0e0e0 15%, transparent 16%), radial-gradient(#e0e0e0 15%, transparent 16%);
+            background-size: 60px 60px;
+            background-position: 0 0, 30px 30px;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            user-select: none;
+            overflow-x: hidden;
+        }
+
+        /* 精靈球造型 Header */
+        header {
+            background-color: var(--poke-red);
+            width: 100%;
+            padding: 20px 0 45px 0;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            border-bottom: 8px solid var(--poke-black);
+        }
+
+        header::after {
+            content: "";
+            width: 60px;
+            height: 60px;
+            background: white;
+            border: 8px solid var(--poke-black);
+            border-radius: 50%;
+            position: absolute;
+            bottom: -34px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+
+        header::before {
+            content: "";
+            width: 20px;
+            height: 20px;
+            background: white;
+            border: 2px solid var(--poke-black);
+            border-radius: 50%;
+            position: absolute;
+            bottom: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 11;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            color: var(--pika-yellow);
+            margin: 0;
+            font-size: 2.5rem; /* 稍微放大字體 */
+            text-shadow: 3px 3px 0 var(--poke-blue);
+            letter-spacing: 2px;
+            font-weight: normal; /* 粉圓體本身很粗，不需要 bold */
+        }
+
+        #game-container {
+            width: 90%;
+            max-width: 800px;
+            margin-top: 60px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 20px;
+        }
+
+        /* 選單樣式：道館徽章風格 */
+        #menu-screen {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .level-btn {
+            background: white;
+            border: 4px solid var(--poke-blue);
+            border-radius: 25px;
+            padding: 20px 25px;
+            font-size: 1.6rem;
+            font-family: var(--font-stack);
+            color: var(--poke-black);
+            cursor: pointer;
+            text-align: left;
+            position: relative;
+            transition: transform 0.1s;
+            box-shadow: 0 6px 0 #2a3691;
+            display: flex;
+            align-items: center;
+        }
+
+        .level-btn:active {
+            transform: translateY(6px);
+            box-shadow: none;
+        }
+
+        .gym-icon {
+            font-size: 2.2rem;
+            margin-right: 20px;
+            filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.2));
+        }
+
+        .level-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .level-tag {
+            font-size: 1.1rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* 遊戲區域樣式 */
+        #game-screen {
+            display: none;
+            width: 100%;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .battle-hud {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid var(--poke-black);
+            border-radius: 15px 0 15px 0;
+            padding: 12px 20px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+            box-shadow: 3px 3px 0 rgba(0,0,0,0.1);
+        }
+
+        .hp-bar-container {
+            width: 180px;
+            height: 18px;
+            background: #555;
+            border-radius: 10px;
+            border: 2px solid white;
+            overflow: hidden;
+            margin-left: 10px;
+        }
+
+        .hp-fill {
+            height: 100%;
+            background: var(--hp-green);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        /* 答案區 */
+        .answer-area {
+            background: white;
+            width: 100%;
+            min-height: 120px;
+            border: 4px solid var(--poke-black);
+            border-radius: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            align-items: center;
+            justify-content: flex-start;
+            position: relative;
+            box-shadow: 6px 6px 0 rgba(0,0,0,0.1);
+        }
+
+        .answer-area::before {
+            content: "句子：";
+            position: absolute;
+            top: -18px;
+            left: 15px;
+            background: var(--pika-yellow);
+            padding: 4px 15px;
+            border: 2px solid var(--poke-black);
+            font-size: 1.1rem;
+            border-radius: 10px;
+            transform: rotate(-2deg);
+        }
+
+        /* 選字區 */
+        .word-pool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .word-card {
+            background: var(--pika-yellow);
+            color: var(--poke-black);
+            padding: 12px 24px;
+            border-radius: 15px;
+            font-size: 1.8rem; /* 字體加大 */
+            cursor: pointer;
+            border: 3px solid #e0b000;
+            box-shadow: 0 5px 0 #b38f00;
+            transition: all 0.2s;
+            font-family: var(--font-stack);
+            line-height: 1.2;
+        }
+
+        .word-card:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        .word-card:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .word-card.used {
+            opacity: 0.4;
+            transform: scale(0.95);
+            filter: grayscale(100%);
+            pointer-events: none;
+            box-shadow: none;
+            background: #ddd;
+            border-color: #bbb;
+        }
+
+        /* 控制按鈕 */
+        .control-area {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .action-btn {
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 1.4rem;
+            border: 3px solid var(--poke-black);
+            cursor: pointer;
+            font-family: var(--font-stack);
+            box-shadow: 0 5px 0 rgba(0,0,0,0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .action-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .btn-reset { background: #FF7F7F; color: white; }
+        .btn-submit { background: #4DAD5B; color: white; }
+        
+        .btn-back {
+            background: var(--poke-black);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 20px;
+            font-family: var(--font-stack);
+            cursor: pointer;
+            margin-bottom: 15px;
+            align-self: flex-start;
+            font-size: 1.1rem;
+        }
+
+        /* 檢查清單 Modal */
+        #checklist-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 35px;
+            border-radius: 25px;
+            width: 85%;
+            max-width: 450px;
+            text-align: center;
+            border: 6px solid var(--pika-yellow);
+            position: relative;
+            animation: zoomIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-family: var(--font-stack);
+        }
+
+        .modal-content h2 {
+            color: var(--poke-blue);
+            font-size: 2.2rem;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        .check-item {
+            margin: 15px 0;
+            font-size: 1.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 15px;
+            cursor: pointer;
+            padding: 15px;
+            background: #f4f4f4;
+            border-radius: 15px;
+            border: 2px solid #ddd;
+            transition: all 0.2s;
+        }
+
+        .check-item.checked {
+            background: #E8F5E9;
+            border-color: var(--hp-green);
+            color: #2E7D32;
+        }
+        
+        .check-icon {
+            font-size: 1.8rem;
+        }
+
+        @keyframes zoomIn {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); border-color: var(--poke-red); }
+            75% { transform: translateX(10px); border-color: var(--poke-red); }
+        }
+        .shake { animation: shake 0.4s; }
+
+        @keyframes flashCorrect {
+            0% { background-color: white; }
+            50% { background-color: #b9f6ca; border-color: var(--hp-green); }
+            100% { background-color: white; }
+        }
+        .flash { animation: flashCorrect 0.6s; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>句子訓練家</h1>
+    </header>
+
+    <div id="game-container">
+        
+        <div id="menu-screen">
+            <button class="level-btn" onclick="startGame(1)">
+                <span class="gym-icon">🪨</span>
+                <div class="level-info">
+                    <span>第一道館 (基礎句型)</span>
+                    <span class="level-tag">任務：教... / 到...</span>
+                </div>
+            </button>
+            <button class="level-btn" onclick="startGame(2)">
+                <span class="gym-icon">💧</span>
+                <div class="level-info">
+                    <span>第二道館 (描寫狀態)</span>
+                    <span class="level-tag">任務：時間... / 形容詞...</span>
+                </div>
+            </button>
+            <button class="level-btn" onclick="startGame(3)">
+                <span class="gym-icon">⚡</span>
+                <div class="level-info">
+                    <span>第三道館 (進階句式)</span>
+                    <span class="level-tag">任務：地... / 把字句</span>
+                </div>
+            </button>
+            <button class="level-btn" onclick="startGame(4)">
+                <span class="gym-icon">🌿</span>
+                <div class="level-info">
+                    <span>第四道館 (複雜句式)</span>
+                    <span class="level-tag">任務：送給... / 有...的...</span>
+                </div>
+            </button>
+            <button class="level-btn" onclick="startGame(5)" style="border-color: var(--pika-yellow); background: #FFFBE6;">
+                <span class="gym-icon">🏆</span>
+                <div class="level-info">
+                    <span>冠軍之路 (大混合)</span>
+                    <span class="level-tag">最終挑戰：所有句型</span>
+                </div>
+            </button>
+        </div>
+
+        <div id="game-screen">
+            <button class="btn-back" onclick="showMenu()">逃跑 (退出)</button>
+            
+            <div class="battle-hud">
+                <div style="font-size: 1.4rem;">
+                    <span id="level-title">LV.1 第一道館</span>
+                </div>
+                <div style="display:flex; align-items:center; font-size:1.2rem;">
+                    <span>HP</span>
+                    <div class="hp-bar-container">
+                        <div class="hp-fill" id="hp-bar"></div>
+                    </div>
+                    <span style="margin-left:8px;"><span id="progress">1</span>/10</span>
+                </div>
+            </div>
+
+            <div class="answer-area" id="answer-box">
+                </div>
+
+            <div class="word-pool" id="word-pool">
+                </div>
+
+            <div class="control-area">
+                <button class="action-btn btn-reset" onclick="resetCurrent()">重來</button>
+                <button class="action-btn btn-submit" onclick="checkAnswer()">使出攻擊！</button>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="checklist-modal">
+        <div class="modal-content">
+            <div style="position: absolute; top:-40px; left:50%; transform:translateX(-50%); font-size:4rem;">🌟</div>
+            <h2>戰鬥勝利！</h2>
+            <p style="font-size:1.2rem; color:#666;">在領取徽章前，請確認：</p>
+            
+            <div class="check-item" onclick="toggleCheck(this)">
+                <span class="check-icon">⬜</span> 
+                <span>1. 我有數齊字數嗎？</span>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+                <span class="check-icon">⬜</span> 
+                <span>2. 字體標點整齊嗎？</span>
+            </div>
+
+            <button class="action-btn btn-submit" id="finish-level-btn" style="width:100%; opacity:0.5; pointer-events:none; margin-top:20px;" onclick="finishLevel()">領取徽章！</button>
+        </div>
+    </div>
+
+    <script>
+        // === 題庫生成 (每個句型 25 題，共 200 題) ===
+        
+        // 1. 人／教／人物／做什麼
+        const pattern1 = [
+            "老師/教/我們/讀書/。", "媽媽/教/弟弟/寫字/。", "爸爸/教/我/游水/。", "教練/教/學生/打球/。",
+            "爺爺/教/孫兒/畫畫/。", "姐姐/教/妹妹/唱歌/。", "哥哥/教/我/做功課/。", "外婆/教/媽媽/做飯/。",
+            "陳老師/教/同學/做手工/。", "林叔叔/教/小朋友/踢足球/。", "王阿姨/教/大家/跳舞/。", "警察/教/市民/過馬路/。",
+            "校長/教/風紀/維持秩序/。", "常識科老師/教/我們/種花/。", "爸爸/教/哥哥/騎單車/。", "媽媽/教/姐姐/摺衣服/。",
+            "老師/教/班長/擦黑板/。", "祖母/教/我/講故事/。", "美勞老師/教/學生/剪紙/。", "爸爸/教/弟弟/綁鞋帶/。",
+            "媽媽/教/我/洗碗/。", "教練/教/隊員/跑步/。", "老師/教/我們/寫生字/。", "哥哥/教/弟弟/玩積木/。", "姐姐/教/我/彈琴/。"
+        ];
+
+        // 2. 人物／到／地點／做什麼
+        const pattern2 = [
+            "我們/到/操場/玩耍/。", "媽媽/到/市場/買菜/。", "同學/到/公園/散步/。", "哥哥/到/書店/看書/。",
+            "爸爸/到/公司/上班/。", "姐姐/到/學校/上課/。", "我們/到/圖書館/借書/。", "弟弟/到/遊樂場/玩滑梯/。",
+            "一家人/到/酒樓/喝茶/。", "我/到/小食部/買燒賣/。", "護士/到/病房/照顧病人/。", "遊客/到/山頂/看風景/。",
+            "外婆/到/花園/澆水/。", "學生/到/禮堂/聽講座/。", "我們/到/海灘/游泳/。", "大家/到/郊野公園/燒烤/。",
+            "妹妹/到/文具店/買鉛筆/。", "消防員/到/火場/救火/。", "醫生/到/診所/看病/。", "我/到/朋友家/開生日會/。",
+            "表哥/到/運動場/跑步/。", "我們/到/動物園/看熊貓/。", "媽媽/到/銀行/存錢/。", "爸爸/到/機場/搭飛機/。", "同學/到/音樂室/唱歌/。"
+        ];
+
+        // 3. 時間，／人／xx地／做什麼
+        const pattern3 = [
+            "晚上/，/弟弟/在/家裏/看電視/。", "早上/，/學生/在/課室裏/上課/。", "下午/，/哥哥/在/游泳池裏/游泳/。",
+            "星期天/，/我們/在/公園裏/野餐/。", "中午/，/爸爸/在/餐廳裏/吃午飯/。", "黃昏/，/爺爺/在/花園裏/散步/。",
+            "小息時/，/同學/在/操場上/跳繩/。", "昨天/，/媽媽/在/廚房裏/煮飯/。", "今天/，/我/在/圖書館/看圖書/。",
+            "假日/，/遊客/在/迪士尼/看煙花/。", "深夜/，/貓頭鷹/在/樹上/唱歌/。", "清晨/，/公公/在/公園/打太極/。",
+            "放學後/，/我/在/補習社/做功課/。", "聖誕節/，/大家/在/商場裏/看燈飾/。", "夏天/，/小朋友/在/沙灘上/堆沙/。",
+            "冬天/，/我們/在/火鍋店/打邊爐/。", "春天/，/蝴蝶/在/花園裏/飛舞/。", "秋天/，/我們/在/山上/放風箏/。",
+            "生日時/，/我/在/家裏/吃蛋糕/。", "週末/，/姐姐/在/房間裏/溫習/。", "晚上/，/爸爸/在/書房裏/工作/。",
+            "早上/，/小鳥/在/大樹上/叫/。", "每天/，/風紀/在/校門口/站崗/。", "剛才/，/弟弟/在/客廳/玩玩具/。", "明天/，/我們/在/學校/開聯歡會/。"
+        ];
+
+        // 4. 形容詞／人物／在／做什麼
+        const pattern4 = [
+            "活潑的/小孩子/在/遊戲/。", "可愛的/小羊/在/吃青草/。", "頑皮的/妹妹/在/爬樹/。", "美麗的/媽媽/在/跳舞/。",
+            "勤勞的/農夫/在/耕田/。", "兇惡的/獅子/在/睡覺/。", "乖巧的/學生/在/讀書/。", "聰明的/哥哥/在/做實驗/。",
+            "忙碌的/螞蟻/在/搬食物/。", "快樂的/小鳥/在/唱歌/。", "傷心的/弟弟/在/哭/。", "慈祥的/奶奶/在/織毛衣/。",
+            "勇敢的/警察/在/捉賊/。", "熱情的/售貨員/在/賣東西/。", "安靜的/圖書管理員/在/整理圖書/。", "高大的/爸爸/在/換燈泡/。",
+            "可愛的/熊貓/在/吃竹葉/。", "靈活的/猴子/在/盪鞦韆/。", "漂亮的/孔雀/在/開屏/。", "忠心的/小狗/在/看門口/。",
+            "飢餓的/乞丐/在/吃麵包/。", "健康的/運動員/在/跑步/。", "年老的/爺爺/在/看報紙/。", "溫柔的/護士/在/打針/。", "膽小的/老鼠/在/躲藏/。"
+        ];
+
+        // 5. 地點，／人／xx地／做什麼
+        const pattern5 = [
+            "公司裏/，/爸爸/勤勞地/工作/。", "大樹上/，/小鳥/快樂地/唱歌/。", "學校裏/，/同學們/用功地/讀書/。",
+            "舞台上/，/舞蹈員/優美地/跳舞/。", "馬路上/，/車輛/飛快地/行駛/。", "草地上/，/小兔/開心地/跳躍/。",
+            "家裏/，/媽媽/細心地/照顧我/。", "課室裏/，/我們/專心地/聽課/。", "圖書館裏/，/大家/安靜地/看書/。",
+            "運動場上/，/健兒們/努力地/比賽/。", "花叢中/，/蜜蜂/忙碌地/採花蜜/。", "天空中/，/飛機/平穩地/飛行/。",
+            "公園裏/，/老人/休閒地/散步/。", "海裏/，/小魚/自由地/游來游去/。", "房間裏/，/嬰兒/甜甜地/睡覺/。",
+            "禮堂裏/，/校長/嚴肅地/演講/。", "操場上/，/風紀/盡責地/當值/。", "廚房裏/，/廚師/熟練地/炒菜/。",
+            "暴雨中/，/路人/狼狽地/奔跑/。", "陽光下/，/花兒/燦爛地/盛開/。", "微風中/，/柳樹/輕輕地/擺動/。",
+            "巴士上/，/乘客/耐心地/等候/。", "醫院裏/，/醫生/小心地/做手術/。", "晚會上/，/小丑/滑稽地/表演/。", "森林裏/，/老虎/大聲地/吼叫/。"
+        ];
+
+        // 6. 人／把／物件／動作／物件2
+        const pattern6 = [
+            "學生/把/書本/放在/桌子上/。", "哥哥/把/玩具/放進/箱子裏/。", "姐姐/把/果汁/倒進/杯子裏/。",
+            "媽媽/把/妹妹/抱/起來/。", "我/把/垃圾/丟進/垃圾桶/。", "弟弟/把/糖果/放進/口袋裏/。",
+            "爸爸/把/車子/停在/停車場/。", "老師/把/圖畫/貼在/壁報板上/。", "風/把/樹葉/吹到/地上去/。",
+            "小狗/把/骨頭/藏在/泥土裏/。", "我/把/雨傘/掛在/架子上/。", "媽媽/把/衣服/掛在/衣櫃裏/。",
+            "同學/把/椅子/搬到/禮堂去/。", "工人/把/貨物/搬上/貨車/。", "郵差/把/信件/放進/信箱裏/。",
+            "我/把/零用錢/存入/錢包裏/。", "妹妹/把/洋娃娃/放在/床邊/。", "護士/把/藥水/塗在/傷口上/。",
+            "警察/把/小偷/抓進/警車裏/。", "農夫/把/種子/撒在/田地裏/。", "我們/把/心意卡/送給/老師/。",
+            "貓兒/把/老鼠/捉/住了/。", "司機/把/巴士/駛進/車站/。", "你/把/功課/交給/班長/。", "表姐/把/相片/貼在/相簿裏/。"
+        ];
+
+        // 7. 人／送給／人2／數量+量詞／物件
+        const pattern7 = [
+            "爸爸/送給/我/一件/新衣服/。", "叔叔/送給/哥哥/一個/皮球/。", "老師/送給/小朋友/一盒/糖果/。",
+            "我/送給/媽媽/一束/鮮花/。", "爺爺/送給/孫兒/一輛/玩具車/。", "聖誕老人/送給/孩子/一份/禮物/。",
+            "同學/送給/班長/一張/生日卡/。", "外婆/送給/我/一個/紅包/。", "姐姐/送給/妹妹/一本/故事書/。",
+            "小明/送給/小強/一枝/鉛筆/。", "姨媽/送給/表妹/一條/裙子/。", "哥哥/送給/弟弟/一塊/巧克力/。",
+            "我們/送給/老師/一張/感謝卡/。", "鄰居/送給/我們/一籃/水果/。", "老闆/送給/員工/一封/利是/。",
+            "我/送給/乞丐/一個/麵包/。", "表哥/送給/我/一張/電影票/。", "朋友/送給/我/一個/鑰匙扣/。",
+            "媽媽/送給/婆婆/一件/毛衣/。", "爸爸/送給/媽媽/一條/項鍊/。", "學校/送給/優異生/一個/獎盃/。",
+            "我/送給/小狗/一根/骨頭/。", "遊客/送給/導遊/一點/小費/。", "義工/送給/長者/一袋/白米/。", "大家/送給/校長/一陣/掌聲/。"
+        ];
+
+        // 8. 人／有／數量+量詞／xx的／物件
+        const pattern8 = [
+            "白兔/有/一雙/紅紅的/眼睛/。", "小飛象/有/一對/大大的/耳朵/。", "猴子/有/一條/長長的/尾巴/。",
+            "我/有/一張/小小的/嘴巴/。", "妹妹/有/一頭/烏黑的/頭髮/。", "長頸鹿/有/一條/長長的/頸/。",
+            "老虎/有/一張/可怕的/嘴巴/。", "公公/有/一把/白白的/鬍子/。", "這朵花/有/一種/香香的/氣味/。",
+            "爸爸/有/一雙/粗壯的/手臂/。", "媽媽/有/一雙/溫暖的/手/。", "這本書/有/一個/有趣的/故事/。",
+            "小豬/有/一個/圓圓的/鼻子/。", "斑馬/有/一身/黑白的/條紋/。", "孔雀/有/一身/美麗的/羽毛/。",
+            "這輛車/有/四個/圓圓的/輪子/。", "那個公園/有/一片/綠綠的/草地/。", "我家/有/一隻/可愛的/小貓/。",
+            "課室/有/一塊/大大的/黑板/。", "天空/有/一個/亮亮的/太陽/。", "花園/有/許多/五顏六色的/花朵/。",
+            "哥哥/有/一個/藍色的/書包/。", "姐姐/有/一條/漂亮的/裙子/。", "桌子/有/四條/長長的/腿/。", "這張畫/有/許多/豐富的/顏色/。"
+        ];
+
+        // 題庫地圖
+        const allQuestions = {
+            1: [...pattern1, ...pattern2],
+            2: [...pattern3, ...pattern4],
+            3: [...pattern5, ...pattern6],
+            4: [...pattern7, ...pattern8],
+            5: [...pattern1, ...pattern2, ...pattern3, ...pattern4, ...pattern5, ...pattern6, ...pattern7, ...pattern8]
+        };
+
+        const levelNames = {
+            1: "第一道館", 2: "第二道館", 3: "第三道館", 4: "第四道館", 5: "冠軍之路"
+        };
+
+        // 遊戲變數
+        let currentLevel = 1;
+        let questionQueue = [];
+        let currentQuestion = null;
+        let selectedWords = [];
+        let qIndex = 0;
+
+        // 初始化
+        function showMenu() {
+            document.getElementById('menu-screen').style.display = 'flex';
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('checklist-modal').style.display = 'none';
+        }
+
+        // 開始關卡
+        function startGame(level) {
+            currentLevel = level;
+            document.getElementById('menu-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'flex';
+            document.getElementById('level-title').innerText = `LV.${level} ${levelNames[level]}`;
+            
+            // 洗牌並抽取 10 題
+            const pool = [...allQuestions[level]];
+            questionQueue = [];
+            for(let i=0; i<10; i++) {
+                if(pool.length === 0) break;
+                const rnd = Math.floor(Math.random() * pool.length);
+                questionQueue.push(pool[rnd]);
+                pool.splice(rnd, 1);
+            }
+            
+            qIndex = 0;
+            updateHP();
+            loadQuestion();
+        }
+
+        function updateHP() {
+            // HP 條模擬進度
+            const percent = (qIndex / 10) * 100;
+            document.getElementById('hp-bar').style.width = percent + "%";
+            document.getElementById('progress').innerText = qIndex + 1;
+        }
+
+        function loadQuestion() {
+            if (qIndex >= questionQueue.length) {
+                // 完成 10 題，滿血，顯示過關畫面
+                document.getElementById('hp-bar').style.width = "100%";
+                showChecklist();
+                return;
+            }
+
+            updateHP();
+            
+            const raw = questionQueue[qIndex];
+            const parts = raw.split('/').map(s => s.trim()).filter(s => s.length > 0);
+            
+            currentQuestion = {
+                correctOrder: [...parts],
+                shuffled: [...parts].sort(() => Math.random() - 0.5),
+                mapped: null
+            };
+
+            // 給每個詞一個 ID，處理重複詞
+            currentQuestion.mapped = currentQuestion.shuffled.map((t, i) => ({
+                id: i, 
+                text: t, 
+                used: false
+            }));
+
+            selectedWords = [];
+            renderGame();
+        }
+
+        function renderGame() {
+            const ansBox = document.getElementById('answer-box');
+            const poolBox = document.getElementById('word-pool');
+            
+            ansBox.innerHTML = '';
+            poolBox.innerHTML = '';
+
+            // 渲染答案區
+            selectedWords.forEach((item, idx) => {
+                const btn = document.createElement('div');
+                btn.className = 'word-card';
+                btn.innerText = item.text;
+                btn.onclick = () => removeWord(idx);
+                ansBox.appendChild(btn);
+            });
+
+            // 渲染選字區
+            currentQuestion.mapped.forEach(item => {
+                const btn = document.createElement('div');
+                btn.className = `word-card ${item.used ? 'used' : ''}`;
+                btn.innerText = item.text;
+                btn.onclick = () => selectWord(item);
+                poolBox.appendChild(btn);
+            });
+        }
+
+        function selectWord(item) {
+            if (item.used) return;
+            item.used = true;
+            selectedWords.push(item);
+            playSound(400, 'sine');
+            renderGame();
+        }
+
+        function removeWord(indexInSelected) {
+            const item = selectedWords[indexInSelected];
+            item.used = false;
+            selectedWords.splice(indexInSelected, 1);
+            playSound(300, 'sine');
+            renderGame();
+        }
+
+        function resetCurrent() {
+            currentQuestion.mapped.forEach(item => item.used = false);
+            selectedWords = [];
+            renderGame();
+        }
+
+        function checkAnswer() {
+            const playerSentence = selectedWords.map(w => w.text).join('');
+            const correctSentence = currentQuestion.correctOrder.join('');
+
+            const ansBox = document.getElementById('answer-box');
+
+            if (playerSentence === correctSentence) {
+                // 答對：效果拔群！
+                ansBox.classList.add('flash');
+                playSound(600, 'square'); // 高音
+                setTimeout(() => playSound(800, 'square'), 100);
+
+                setTimeout(() => {
+                    ansBox.classList.remove('flash');
+                    qIndex++;
+                    loadQuestion();
+                }, 800);
+            } else {
+                // 答錯：效果不好
+                ansBox.classList.add('shake');
+                playSound(150, 'sawtooth'); // 低音
+                setTimeout(() => {
+                    ansBox.classList.remove('shake');
+                }, 500);
+            }
+        }
+
+        // === 檢查清單邏輯 ===
+        let checks = [false, false];
+
+        function showChecklist() {
+            const modal = document.getElementById('checklist-modal');
+            modal.style.display = 'flex';
+            
+            checks = [false, false];
+            document.querySelectorAll('.check-item').forEach(el => {
+                el.classList.remove('checked');
+                el.querySelector('.check-icon').innerText = '⬜';
+            });
+            document.getElementById('finish-level-btn').style.opacity = '0.5';
+            document.getElementById('finish-level-btn').style.pointerEvents = 'none';
+        }
+
+        function toggleCheck(el) {
+            const items = document.querySelectorAll('.check-item');
+            let index = -1;
+            items.forEach((item, idx) => {
+                if (item === el) index = idx;
+            });
+
+            checks[index] = !checks[index];
+            
+            if (checks[index]) {
+                el.classList.add('checked');
+                el.querySelector('.check-icon').innerText = '✅';
+                playSound(500, 'sine');
+            } else {
+                el.classList.remove('checked');
+                el.querySelector('.check-icon').innerText = '⬜';
+            }
+
+            const btn = document.getElementById('finish-level-btn');
+            if (checks[0] && checks[1]) {
+                btn.style.opacity = '1';
+                btn.style.pointerEvents = 'auto';
+            } else {
+                btn.style.opacity = '0.5';
+                btn.style.pointerEvents = 'none';
+            }
+        }
+
+        function finishLevel() {
+            document.getElementById('checklist-modal').style.display = 'none';
+            alert(`恭喜！你獲得了 ${levelNames[currentLevel]} 的徽章！`);
+            showMenu();
+        }
+
+        // 簡單音效
+        function playSound(freq, type) {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.1);
+            } catch(e) {}
+        }
+
+    </script>
+</body>
+</html>
