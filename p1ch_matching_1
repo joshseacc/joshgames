@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Joshua 中文詞辨大挑戰</title>
+    <style>
+        body { font-family: 'KaiTi', 'BiauKai', sans-serif; background-color: #f0f8ff; text-align: center; padding: 20px; }
+        h1 { color: #2c3e50; }
+        .menu-btn { display: block; width: 80%; max-width: 300px; margin: 10px auto; padding: 15px; font-size: 20px; background-color: #3498db; color: white; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 4px #2980b9; }
+        .menu-btn:active { box-shadow: 0 0 #2980b9; transform: translateY(4px); }
+        .game-container { display: none; background: white; max-width: 600px; margin: 0 auto; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .question { font-size: 28px; margin-bottom: 30px; line-height: 1.6; }
+        .options { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+        .option-btn { padding: 10px 30px; font-size: 24px; background-color: #e67e22; color: white; border: none; border-radius: 8px; cursor: pointer; }
+        .option-btn:hover { background-color: #d35400; }
+        .feedback { margin-top: 20px; font-size: 24px; font-weight: bold; height: 30px; }
+        .correct { color: #27ae60; }
+        .wrong { color: #c0392b; }
+        .score-board { font-size: 18px; color: #7f8c8d; margin-top: 20px; }
+        .back-btn { margin-top: 30px; background-color: #95a5a6; }
+    </style>
+</head>
+<body>
+
+    <div id="menu">
+        <h1>🎒 Joshua 中文詞辨大挑戰</h1>
+        <p>加油！請選擇要溫習的範圍：</p>
+        <button class="menu-btn" onclick="startGame('test')">🔥 16/1 小測衝刺 (第10, 13組)</button>
+        <button class="menu-btn" onclick="startGame('exam')">🏆 5/2 期考全攻 (第6-27組)</button>
+    </div>
+
+    <div id="game" class="game-container">
+        <div id="score" class="score-board"></div>
+        <div id="question-box" class="question"></div>
+        <div id="options-box" class="options"></div>
+        <div id="feedback" class="feedback"></div>
+        <button class="menu-btn back-btn" onclick="goBack()">返回目錄</button>
+    </div>
+
+    <script>
+        // 題目資料庫 - 根據上傳的文件製作
+        const questionsTest = [
+            // 第10組：晚上 vs 晚飯
+            { q: "爸爸每天_________都回家吃飯。", options: ["晚上", "晚飯"], answer: "晚上" },
+            { q: "媽媽煮的_________很美味。", options: ["晚上", "晚飯"], answer: "晚飯" },
+            // 第13組：親愛 vs 可愛
+            { q: "_________的媽媽，謝謝您照顧我。", options: ["親愛", "可愛"], answer: "親愛" },
+            { q: "這隻小白兔長得很_________。", options: ["親愛", "可愛"], answer: "可愛" }
+        ];
+
+        const questionsExam = [
+            // 第6組：河邊 vs 池塘
+            { q: "青蛙在_________裏游來游去。", options: ["河邊", "池塘"], answer: "池塘" },
+            { q: "我們在_________散步，看見小船。", options: ["河邊", "池塘"], answer: "河邊" },
+            // 第11組：美麗 vs 漂亮
+            { q: "這裡的風景多麼_________啊！", options: ["美麗", "漂亮"], answer: "美麗" },
+            { q: "姐姐穿了一條_________的裙子。", options: ["美麗", "漂亮"], answer: "漂亮" },
+            // 第12組：請 vs 猜
+            { q: "_________你坐下來。", options: ["請", "猜"], answer: "請" },
+            { q: "你_________一猜我的書包裏有甚麼？", options: ["請", "猜"], answer: "猜" },
+            // 第14組：香噴噴 vs 芬芳
+            { q: "廚房裏飄來_________的飯菜味。", options: ["香噴噴", "芬芳"], answer: "香噴噴" },
+            { q: "花園裏傳來陣陣_________的花香。", options: ["香噴噴", "芬芳"], answer: "芬芳" },
+            // 第20組：祝福 vs 感謝
+            { q: "我_________老師對我的教導。", options: ["祝福", "感謝"], answer: "感謝" },
+            { q: "生日卡上寫滿了大家的_________。", options: ["祝福", "感謝"], answer: "祝福" },
+            // 第21組：一片 vs 一顆 vs 一條
+            { q: "桌子上放了_________麵包。", options: ["一片", "一顆", "一條"], answer: "一片" },
+            { q: "天上有一閃一閃的_________星星。", options: ["一片", "一顆", "一條"], answer: "一顆" },
+            { q: "小河裏有_________小魚。", options: ["一片", "一顆", "一條"], answer: "一條" },
+            // 第22組：拍手 vs 握手
+            { q: "表演很精彩，大家用力_________。", options: ["拍手", "握手"], answer: "拍手" },
+            { q: "我們_________言和，做好朋友。", options: ["拍手", "握手"], answer: "握手" },
+            // 第23組：再見 vs 看見
+            { q: "放學了，我跟老師說_________。", options: ["再見", "看見"], answer: "再見" },
+            { q: "我_________天空有一道彩虹。", options: ["再見", "看見"], answer: "看見" },
+            // 第24組：指 vs 摸
+            { q: "請不要亂_________博物館的東西。", options: ["指", "摸"], answer: "摸" },
+            { q: "他用手指_________向前方。", options: ["指", "摸"], answer: "指" },
+            // 第25組：散步 vs 逃走
+            { q: "晚飯後，我們去公園_________。", options: ["散步", "逃走"], answer: "散步" },
+            { q: "小老鼠看見貓，立刻_________了。", options: ["散步", "逃走"], answer: "逃走" },
+            // 第27組：準備 vs 忽然
+            { q: "我_________好明天上學的書包了。", options: ["準備", "忽然"], answer: "準備" },
+            { q: "天空_________下起大雨來。", options: ["準備", "忽然"], answer: "忽然" }
+        ];
+
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let score = 0;
+
+        function startGame(mode) {
+            document.getElementById('menu').style.display = 'none';
+            document.getElementById('game').style.display = 'block';
+            
+            if (mode === 'test') {
+                currentQuestions = [...questionsTest];
+            } else {
+                currentQuestions = [...questionsExam];
+            }
+            
+            // 洗牌 (Shuffle)
+            currentQuestions.sort(() => Math.random() - 0.5);
+            
+            currentIndex = 0;
+            score = 0;
+            showQuestion();
+        }
+
+        function showQuestion() {
+            if (currentIndex >= currentQuestions.length) {
+                endGame();
+                return;
+            }
+
+            const qData = currentQuestions[currentIndex];
+            document.getElementById('question-box').innerText = qData.q;
+            document.getElementById('score').innerText = `第 ${currentIndex + 1} / ${currentQuestions.length} 題`;
+            document.getElementById('feedback').innerText = "";
+
+            const optionsDiv = document.getElementById('options-box');
+            optionsDiv.innerHTML = "";
+            
+            qData.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(opt, qData.answer);
+                optionsDiv.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selected, correct) {
+            const feedback = document.getElementById('feedback');
+            if (selected === correct) {
+                feedback.innerHTML = "<span class='correct'>✅ 答對了！</span>";
+                score++;
+                setTimeout(() => {
+                    currentIndex++;
+                    showQuestion();
+                }, 1000);
+            } else {
+                feedback.innerHTML = "<span class='wrong'>❌ 試多次！</span>";
+            }
+        }
+
+        function endGame() {
+            document.getElementById('question-box').innerText = "🎉 完成了！";
+            document.getElementById('options-box').innerHTML = "";
+            document.getElementById('feedback').innerHTML = `你的得分：${score} / ${currentQuestions.length}`;
+        }
+
+        function goBack() {
+            document.getElementById('game').style.display = 'none';
+            document.getElementById('menu').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
