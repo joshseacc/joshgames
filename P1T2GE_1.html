@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lightning & Spidey Grammar Race!</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', 'Arial', sans-serif;
+            background-color: #222;
+            background-image: repeating-linear-gradient(45deg, #111 25%, transparent 25%, transparent 75%, #111 75%, #111), repeating-linear-gradient(45deg, #111 25%, #222 25%, #222 75%, #111 75%, #111);
+            background-position: 0 0, 10px 10px;
+            background-size: 20px 20px;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        #game-container {
+            background: linear-gradient(180deg, #ff2800 0%, #a70000 100%);
+            width: 90%;
+            max-width: 600px;
+            border-radius: 20px;
+            border: 5px solid #ffeb3b;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(255, 40, 0, 0.8);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        h1 {
+            color: #ffeb3b;
+            text-shadow: 2px 2px 0 #000;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .question-box {
+            background: white;
+            color: black;
+            padding: 20px;
+            border-radius: 15px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin-bottom: 20px;
+            border: 3px solid #000;
+            position: relative;
+        }
+
+        .spider-web {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            font-size: 40px;
+            opacity: 0.8;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        button {
+            background-color: #0044cc; /* Spidey Blue */
+            color: white;
+            border: 3px solid #000;
+            padding: 15px;
+            font-size: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.1s, background 0.2s;
+            font-family: inherit;
+        }
+
+        button:hover {
+            transform: scale(1.02);
+            background-color: #0066ff;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button.correct {
+            background-color: #32cd32 !important;
+            border-color: #fff !important;
+        }
+
+        button.wrong {
+            background-color: #cc0000 !important;
+            opacity: 0.6;
+        }
+
+        #feedback {
+            height: 40px;
+            margin-top: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            text-shadow: 1px 1px 0 #000;
+        }
+
+        #next-btn {
+            background-color: #ffeb3b;
+            color: black;
+            display: none;
+            margin-top: 10px;
+            width: 100%;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #444;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #ffeb3b;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        /* Character Icons */
+        .icon {
+            font-size: 50px;
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div style="font-size: 40px; margin-bottom: 10px;">🚗 ⚡ 🕷️</div>
+    <h1>Grammar Grand Prix!</h1>
+    
+    <div class="progress-bar">
+        <div class="progress-fill" id="progress"></div>
+    </div>
+
+    <div class="stats">
+        <span id="score">Score: 0</span>
+        <span id="q-count">Question: 1</span>
+    </div>
+
+    <div class="question-box">
+        <span class="spider-web">🕸️</span>
+        <div id="question-text">Loading...</div>
+    </div>
+
+    <div class="options-grid" id="options-area">
+        </div>
+
+    <div id="feedback"></div>
+    <button id="next-btn" onclick="nextQuestion()">NEXT LAP ➡️</button>
+</div>
+
+<script>
+    // ---------------------------------------------------------
+    // QUESTION BANK
+    // Covers: Verb To Be, Pronouns, Existence, Present Continuous,
+    // Comparisons, Clothing & Demonstratives
+    // ---------------------------------------------------------
+    const questionBank = [
+        // --- A. The Verb "To Be" (am/is/are) ---
+        { q: "I _____ Tony Stark.", options: ["am", "is", "are"], ans: 0 },
+        { q: "This _____ Lightning McQueen.", options: ["are", "am", "is"], ans: 2 },
+        { q: "You _____ a good racer!", options: ["is", "am", "are"], ans: 2 },
+        { q: "How _____ you, Mater?", options: ["am", "is", "are"], ans: 2 },
+        { q: "I _____ fine, thank you.", options: ["am", "is", "are"], ans: 0 },
+        { q: "The car _____ red.", options: ["am", "is", "are"], ans: 1 },
+        { q: "Peter and MJ _____ friends.", options: ["is", "am", "are"], ans: 2 }, // Tricky: Plural
+        { q: "Doc Hudson _____ old.", options: ["is", "am", "are"], ans: 0 },
+        { q: "The tires _____ black.", options: ["is", "are", "am"], ans: 1 },
+
+        // --- B. Personal Pronouns (I/You/He/She/It/We/They) ---
+        { q: "_____ am Sally.", options: ["I", "You", "He"], ans: 0 },
+        { q: "_____ are Tom.", options: ["I", "She", "You"], ans: 2 },
+        { q: "Peter is a boy. _____ is seven.", options: ["She", "He", "It"], ans: 1 },
+        { q: "Mary is a girl. _____ is six.", options: ["He", "She", "It"], ans: 1 },
+        { q: "The truck is big. _____ is heavy.", options: ["He", "She", "It"], ans: 2 },
+        { q: "McQueen and I are friends. _____ go to school together.", options: ["We", "They", "You"], ans: 0 }, // Tricky: X and I = We
+        { q: "The villains are bad. _____ like to fight.", options: ["We", "They", "It"], ans: 1 },
+        { q: "Where is Mom? _____ is in the kitchen.", options: ["He", "She", "It"], ans: 1 },
+
+        // --- C. Existence & Location (Is there / There is) ---
+        { q: "_____ a table in the kitchen?", options: ["Is there", "Are there", "Am there"], ans: 0 },
+        { q: "Is there a sofa? Yes, _____.", options: ["there is", "there is not", "is there"], ans: 0 },
+        { q: "Is there a spider? No, _____.", options: ["there is", "there is not", "there are"], ans: 1 },
+        { q: "Where _____ your mother?", options: ["is", "are", "am"], ans: 0 },
+        { q: "_____ is your brother? He is in the bedroom.", options: ["What", "Where", "Who"], ans: 1 },
+        
+        // --- D. Present Continuous (is + verb-ing) ---
+        { q: "She is _____ (cook).", options: ["cook", "cooks", "cooking"], ans: 2 },
+        { q: "He is _____ (eat).", options: ["eating", "eats", "eates"], ans: 0 },
+        { q: "Spidey is _____ (jump).", options: ["jump", "jumping", "jumps"], ans: 1 },
+        { q: "Mater is _____ (sleep).", options: ["sleep", "sleeping", "sleeps"], ans: 1 },
+        // Tricky Spelling Rule: Drop 'e'
+        { q: "Sally is _____ (dance).", options: ["danceing", "dancing", "dances"], ans: 1 }, 
+        { q: "Mom is _____ (make) a cake.", options: ["making", "makeing", "makes"], ans: 0 },
+        { q: "They are _____ (have) a bath.", options: ["having", "haveing", "haves"], ans: 0 },
+        { q: "Ben is _____ (come) home.", options: ["coming", "comeing", "comes"], ans: 0 },
+
+        // --- E. Comparison (Adjectives) ---
+        { q: "The English book is thick but the exercise book is _____.", options: ["thin", "fat", "big"], ans: 0 },
+        { q: "The soup is hot but the juice is _____.", options: ["warm", "cold", "wet"], ans: 1 },
+        { q: "Hulk is big but Ant-Man is _____.", options: ["tall", "small", "fat"], ans: 1 },
+        { q: "The pig is fat but the monkey is _____.", options: ["thin", "thick", "heavy"], ans: 0 },
+        { q: "The rock is hard but the pillow is _____.", options: ["soft", "dry", "sad"], ans: 0 },
+        { q: "McQueen is fast but the tractor is _____.", options: ["slow", "quick", "happy"], ans: 0 },
+        { q: "The mop is wet but the towel is _____.", options: ["dry", "cold", "sad"], ans: 0 },
+        { q: "Grandma is short but Dad is _____.", options: ["tall", "long", "small"], ans: 0 },
+
+        // --- F. Clothing & Demonstratives (That/Those) ---
+        { q: "What _____ you wearing?", options: ["is", "am", "are"], ans: 2 },
+        { q: "I _____ wearing an orange hat.", options: ["am", "is", "are"], ans: 0 },
+        { q: "What _____ he wearing?", options: ["am", "is", "are"], ans: 1 },
+        { q: "_____ is wearing a red suit.", options: ["He", "I", "You"], ans: 0 },
+        
+        // Demonstratives (Singular vs Plural)
+        { q: "What is _____? (1 item)", options: ["that", "those", "these"], ans: 0 },
+        { q: "_____ is my red T-shirt.", options: ["That", "Those", "They"], ans: 0 },
+        { q: "What are _____? (2 items)", options: ["that", "this", "those"], ans: 2 },
+        { q: "_____ are my purple shoes.", options: ["That", "Those", "It"], ans: 1 },
+        
+        // Tricky "Pair of" items (Always Those)
+        { q: "What are those? _____ are trousers.", options: ["That", "Those", "It"], ans: 1 },
+        { q: "That is my belt. _____ are my jeans.", options: ["That", "Those", "This"], ans: 1 },
+        { q: "_____ are glasses.", options: ["That", "Those", "It"], ans: 1 },
+        { q: "Is that a jacket? Yes, _____ is.", options: ["that", "those", "it"], ans: 2 }, // Pronoun response
+
+        // --- Mixed/Extra Practice ---
+        { q: "There _____ many cars.", options: ["is", "are", "am"], ans: 1 },
+        { q: "_____ she happy? Yes, she is.", options: ["Am", "Are", "Is"], ans: 2 },
+        { q: "Look! He is _____ (swim).", options: ["swimming", "swiming", "swims"], ans: 0 }, // Double m rule (bonus)
+        { q: "The balloon is light but the car is _____.", options: ["heavy", "thin", "sad"], ans: 0 },
+        { q: "Is there a lamp in the bedroom? No, there _____.", options: ["is not", "are not", "not"], ans: 0 }
+    ];
+
+    // Game Variables
+    let currentQuestion = 0;
+    let score = 0;
+    let usedQuestions = [];
+    const totalQuestionsToPlay = 20; // Play 20 questions per round
+
+    // DOM Elements
+    const questionText = document.getElementById("question-text");
+    const optionsArea = document.getElementById("options-area");
+    const feedback = document.getElementById("feedback");
+    const nextBtn = document.getElementById("next-btn");
+    const scoreDisplay = document.getElementById("score");
+    const qCountDisplay = document.getElementById("q-count");
+    const progressBar = document.getElementById("progress");
+
+    // Shuffle Function
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    // Initialize Game
+    function initGame() {
+        // Shuffle the entire bank and pick the first N questions
+        const shuffledBank = shuffle([...questionBank]);
+        usedQuestions = shuffledBank.slice(0, totalQuestionsToPlay);
+        currentQuestion = 0;
+        score = 0;
+        loadQuestion();
+    }
+
+    // Load Question
+    function loadQuestion() {
+        if (currentQuestion >= totalQuestionsToPlay) {
+            endGame();
+            return;
+        }
+
+        const q = usedQuestions[currentQuestion];
+        questionText.textContent = q.q;
+        optionsArea.innerHTML = "";
+        feedback.textContent = "";
+        nextBtn.style.display = "none";
+        
+        // Update stats
+        scoreDisplay.textContent = `Score: ${score}`;
+        qCountDisplay.textContent = `Question: ${currentQuestion + 1}/${totalQuestionsToPlay}`;
+        progressBar.style.width = `${((currentQuestion) / totalQuestionsToPlay) * 100}%`;
+
+        // Create Buttons
+        q.options.forEach((opt, index) => {
+            const btn = document.createElement("button");
+            btn.textContent = opt;
+            btn.onclick = () => checkAnswer(index, q.ans, btn);
+            optionsArea.appendChild(btn);
+        });
+    }
+
+    // Check Answer
+    function checkAnswer(selected, correct, btnElement) {
+        // Disable all buttons
+        const buttons = optionsArea.querySelectorAll("button");
+        buttons.forEach(b => b.disabled = true);
+
+        if (selected === correct) {
+            btnElement.classList.add("correct");
+            feedback.textContent = "KACHOW! Correct! ⚡";
+            feedback.style.color = "#32cd32";
+            score += 10;
+        } else {
+            btnElement.classList.add("wrong");
+            buttons[correct].classList.add("correct"); // Show correct answer
+            feedback.textContent = "Oh no! Spidey senses tingle! 🕸️";
+            feedback.style.color = "#ffeb3b";
+        }
+
+        scoreDisplay.textContent = `Score: ${score}`;
+        nextBtn.style.display = "block";
+    }
+
+    // Next Question
+    function nextQuestion() {
+        currentQuestion++;
+        loadQuestion();
+    }
+
+    // End Game
+    function endGame() {
+        questionText.textContent = "Race Finished!";
+        optionsArea.innerHTML = `
+            <div style='font-size:24px; color: black;'>
+                Your Final Score: ${score} / ${totalQuestionsToPlay * 10}<br><br>
+                ${score >= 180 ? "🏆 PISTON CUP WINNER! 🏆" : "Great Racing! Try Again!"}
+            </div>
+            <button onclick="location.reload()" style="margin-top:20px; background:#ff2800;">Play Again</button>
+        `;
+        feedback.textContent = "";
+        nextBtn.style.display = "none";
+        progressBar.style.width = "100%";
+    }
+
+    // Start
+    initGame();
+
+</script>
+
+</body>
+</html>
