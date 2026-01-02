@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chiikawa Math Party</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Google Fonts: M PLUS Rounded 1c (Cute & Rounded) -->
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            background-color: #fff9fb; /* Very light pink background */
+            background-image: radial-gradient(#ffe4e9 2px, transparent 2px);
+            background-size: 30px 30px;
+            touch-action: manipulation;
+        }
+
+        /* Chiikawa Theme Colors */
+        .theme-chiikawa { --main: #ffb7c5; --dark: #ff8fa3; --bg: #fff0f3; }
+        .theme-hachiware { --main: #a2d2ff; --dark: #74b3f0; --bg: #f0f9ff; }
+        .theme-usagi { --main: #fff3b0; --dark: #ffd93d; --bg: #fffbe6; }
+        
+        /* Utility Classes */
+        .btn-cute {
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 6px 0 rgba(0,0,0,0.1);
+        }
+        .btn-cute:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.1);
+        }
+        .card-shadow {
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.1);
+        }
+        
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+        
+        @keyframes pop {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop { animation: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #fff; }
+        ::-webkit-scrollbar-thumb { background: #ffb7c5; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        // --- SVGs for UI Decoration ---
+        // Fixed: Removed HTML comments inside JSX to prevent SyntaxError
+        const ChiikawaFace = () => (
+            <svg viewBox="0 0 100 100" className="w-12 h-12 inline-block mr-2">
+                <circle cx="50" cy="50" r="45" fill="white" stroke="#555" strokeWidth="3"/>
+                <circle cx="20" cy="20" r="8" fill="white" stroke="#555" strokeWidth="3"/>
+                <circle cx="80" cy="20" r="8" fill="white" stroke="#555" strokeWidth="3"/>
+                <circle cx="35" cy="55" r="4" fill="#333"/>
+                <circle cx="65" cy="55" r="4" fill="#333"/>
+                <path d="M45 65 Q50 70 55 65" stroke="#333" strokeWidth="3" fill="none"/>
+                <ellipse cx="30" cy="65" rx="6" ry="4" fill="#ffb7c5" opacity="0.6"/>
+                <ellipse cx="70" cy="65" rx="6" ry="4" fill="#ffb7c5" opacity="0.6"/>
+            </svg>
+        );
+
+        const HachiwareFace = () => (
+            <svg viewBox="0 0 100 100" className="w-12 h-12 inline-block mr-2">
+                <path d="M10,20 L30,5 L50,20 L70,5 L90,20 L90,80 Q90,95 50,95 Q10,95 10,80 Z" fill="white" stroke="#555" strokeWidth="3"/>
+                <path d="M10,20 L30,5 L50,20 L70,5 L90,20 L90,40 L10,40 Z" fill="#a2d2ff" stroke="none"/>
+                <path d="M10,20 L30,5 L50,20 L70,5 L90,20" fill="none" stroke="#555" strokeWidth="3"/>
+                <circle cx="35" cy="55" r="4" fill="#333"/>
+                <circle cx="65" cy="55" r="4" fill="#333"/>
+                <path d="M45 65 Q50 60 55 65" stroke="#333" strokeWidth="3" fill="none"/>
+            </svg>
+        );
+
+        const UsagiFace = () => (
+            <svg viewBox="0 0 100 100" className="w-12 h-12 inline-block mr-2">
+                 <ellipse cx="50" cy="60" rx="45" ry="35" fill="#fff3b0" stroke="#555" strokeWidth="3"/>
+                 <ellipse cx="30" cy="20" rx="10" ry="25" fill="#fff3b0" stroke="#555" strokeWidth="3" transform="rotate(-10 30 20)"/>
+                 <ellipse cx="70" cy="20" rx="10" ry="25" fill="#fff3b0" stroke="#555" strokeWidth="3" transform="rotate(10 70 20)"/>
+                 <circle cx="35" cy="55" r="4" fill="#333"/>
+                 <circle cx="65" cy="55" r="4" fill="#333"/>
+                 <path d="M45 68 Q50 75 55 68" stroke="#333" strokeWidth="3" fill="none"/>
+            </svg>
+        );
+
+        const StarIcon = () => (
+             <svg viewBox="0 0 24 24" className="w-6 h-6 text-yellow-400 fill-current drop-shadow-sm">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+             </svg>
+        );
+
+        // --- Utility Functions ---
+        const getText = (lang, key) => {
+            const dictionary = {
+                zh: {
+                    largest: "最大",
+                    smallest: "最小",
+                    odd: "單數",
+                    even: "雙數",
+                    check: "檢查",
+                    reset: "重置",
+                    menu: "主選單",
+                    level: "關卡",
+                    score: "星星",
+                    completed: "太棒了！全部完成！",
+                    correct: "答對了！",
+                    wrong: "再試一次喔！",
+                    next: "下一題",
+                    make: "請構成",
+                    instructionBead: "點擊柱子放珠珠",
+                    instructionCard: "點擊卡片排排看",
+                    cols: ["個", "十", "百", "千", "萬"]
+                },
+                en: {
+                    largest: "largest", // Lowercase for sentence flow
+                    smallest: "smallest",
+                    odd: "odd",
+                    even: "even",
+                    check: "Check",
+                    reset: "Reset",
+                    menu: "Menu",
+                    level: "Level",
+                    score: "Stars",
+                    completed: "Awesome! All Done!",
+                    correct: "Correct!",
+                    wrong: "Try Again!",
+                    next: "Next",
+                    make: "Make",
+                    instructionBead: "Click columns to add beads",
+                    instructionCard: "Click cards to place them",
+                    cols: ["Units", "Tens", "Hundreds", "Thousands", "Ten Thousands"]
+                }
+            };
+            return dictionary[lang][key];
+        };
+
+        // --- Logic Solvers (Same as before) ---
+        const solveBeadProblem = (totalBeads, columnsCount, isMax, isOddTarget) => {
+            let bestVal = isMax ? -1 : Infinity;
+            
+            function findPartitions(targetSum, numBins, currentArr = []) {
+                if (numBins === 1) {
+                    if (targetSum >= 0 && targetSum <= 9) {
+                        const finalArr = [...currentArr, targetSum];
+                        const lastDigit = finalArr[finalArr.length - 1];
+                        const numIsOdd = lastDigit % 2 !== 0;
+                        if (numIsOdd === isOddTarget) {
+                            if (finalArr.length > 1 && finalArr[0] === 0) return;
+                            const val = parseInt(finalArr.join(''));
+                            if (isMax) { if (val > bestVal) bestVal = val; } 
+                            else { if (val < bestVal) bestVal = val; }
+                        }
+                    }
+                    return;
+                }
+                const loopStart = isMax ? 9 : 0;
+                const loopEnd = isMax ? -1 : 10;
+                const step = isMax ? -1 : 1;
+                for (let i = loopStart; i !== loopEnd; i += step) {
+                    if (targetSum - i >= 0 && (targetSum - i) <= 9 * (numBins - 1)) {
+                         findPartitions(targetSum - i, numBins - 1, [...currentArr, i]);
+                    }
+                }
+            }
+            findPartitions(totalBeads, columnsCount);
+            return bestVal === Infinity || bestVal === -1 ? null : bestVal;
+        };
+
+        const solveCardProblem = (cards, slots, isMax, isOddTarget) => {
+            let bestVal = isMax ? -1 : Infinity;
+            const permute = (arr, m = []) => {
+                if (m.length === slots) {
+                    const numVal = parseInt(m.join(''));
+                    const lastDigit = m[m.length - 1];
+                    const numIsOdd = lastDigit % 2 !== 0;
+                    if (numIsOdd === isOddTarget) {
+                         if (isMax) { if (numVal > bestVal) bestVal = numVal; } 
+                         else { if (numVal < bestVal) bestVal = numVal; }
+                    }
+                    return;
+                }
+                for (let i = 0; i < arr.length; i++) {
+                    let curr = arr.slice();
+                    let next = curr.splice(i, 1);
+                    permute(curr.slice(), m.concat(next));
+                }
+            };
+            permute(cards);
+            return bestVal === Infinity || bestVal === -1 ? null : bestVal;
+        };
+
+        // --- Components ---
+
+        const MainMenu = ({ onSelectMode }) => {
+            return (
+                <div className="min-h-screen flex flex-col items-center justify-center p-4">
+                    <div className="bg-white/80 backdrop-blur-sm p-8 rounded-3xl shadow-xl max-w-2xl w-full border-4 border-pink-100">
+                        <div className="text-center mb-8">
+                            <h1 className="text-4xl font-black text-pink-500 tracking-wider mb-2 drop-shadow-sm flex items-center justify-center gap-2">
+                                <ChiikawaFace />
+                                <span className="animate-float">Chiikawa Math</span>
+                                <HachiwareFace />
+                            </h1>
+                            <p className="text-gray-500 font-bold rounded-full bg-pink-50 inline-block px-4 py-1">快樂學數學！ Math Party!</p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Chiikawa Section - Chinese Basic */}
+                            <div className="space-y-3">
+                                <div className="text-center text-pink-400 font-bold mb-1">中文基礎篇</div>
+                                <button onClick={() => onSelectMode(1)} className="w-full btn-cute bg-pink-100 hover:bg-pink-200 text-pink-600 p-4 rounded-2xl flex items-center gap-3 border-2 border-pink-200">
+                                    <div className="bg-white p-2 rounded-full text-2xl">🧮</div>
+                                    <div className="text-left">
+                                        <div className="font-black text-lg">1. 數珠挑戰</div>
+                                        <div className="text-xs opacity-70">兩位數 | 大小單雙</div>
+                                    </div>
+                                </button>
+                                <button onClick={() => onSelectMode(2)} className="w-full btn-cute bg-pink-100 hover:bg-pink-200 text-pink-600 p-4 rounded-2xl flex items-center gap-3 border-2 border-pink-200">
+                                    <div className="bg-white p-2 rounded-full text-2xl">🃏</div>
+                                    <div className="text-left">
+                                        <div className="font-black text-lg">2. 數字卡排排看</div>
+                                        <div className="text-xs opacity-70">兩位數 | 排卡遊戲</div>
+                                    </div>
+                                </button>
+                            </div>
+
+                            {/* Usagi Section - English Basic */}
+                            <div className="space-y-3">
+                                <div className="text-center text-yellow-500 font-bold mb-1">English Basic (New!)</div>
+                                <button onClick={() => onSelectMode(5)} className="w-full btn-cute bg-yellow-100 hover:bg-yellow-200 text-yellow-700 p-4 rounded-2xl flex items-center gap-3 border-2 border-yellow-200">
+                                    <div className="bg-white p-2 rounded-full text-2xl">🇬🇧</div>
+                                    <div className="text-left">
+                                        <div className="font-black text-lg">5. Bead Challenge</div>
+                                        <div className="text-xs opacity-70">2-Digit | Beads</div>
+                                    </div>
+                                </button>
+                                <button onClick={() => onSelectMode(6)} className="w-full btn-cute bg-yellow-100 hover:bg-yellow-200 text-yellow-700 p-4 rounded-2xl flex items-center gap-3 border-2 border-yellow-200">
+                                    <div className="bg-white p-2 rounded-full text-2xl">🇬🇧</div>
+                                    <div className="text-left">
+                                        <div className="font-black text-lg">6. Card Sort</div>
+                                        <div className="text-xs opacity-70">2-Digit | Cards</div>
+                                    </div>
+                                </button>
+                            </div>
+                            
+                            {/* Hachiware Section - Advanced */}
+                            <div className="md:col-span-2 space-y-3 mt-2 pt-4 border-t-2 border-dashed border-gray-200">
+                                <div className="text-center text-blue-400 font-bold mb-1">English Advanced (5-Digit)</div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                     <button onClick={() => onSelectMode(4)} className="w-full btn-cute bg-blue-100 hover:bg-blue-200 text-blue-600 p-4 rounded-2xl flex items-center gap-3 border-2 border-blue-200">
+                                        <div className="bg-white p-2 rounded-full text-2xl">🏆</div>
+                                        <div className="text-left">
+                                            <div className="font-black text-lg">4. Bead Master</div>
+                                            <div className="text-xs opacity-70">5-Digit | Place Value</div>
+                                        </div>
+                                    </button>
+                                    <button onClick={() => onSelectMode(3)} className="w-full btn-cute bg-blue-100 hover:bg-blue-200 text-blue-600 p-4 rounded-2xl flex items-center gap-3 border-2 border-blue-200">
+                                        <div className="bg-white p-2 rounded-full text-2xl">🎓</div>
+                                        <div className="text-left">
+                                            <div className="font-black text-lg">3. Card Master</div>
+                                            <div className="text-xs opacity-70">5-Digit | Logic</div>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const GameContainer = ({ modeConfig, children, level, score, onBack, themeColor }) => {
+            const themeClasses = {
+                chiikawa: "from-pink-100 to-white text-pink-600 border-pink-200",
+                hachiware: "from-blue-100 to-white text-blue-600 border-blue-200",
+                usagi: "from-yellow-100 to-white text-yellow-600 border-yellow-200"
+            };
+            const btnClasses = {
+                chiikawa: "bg-pink-400 hover:bg-pink-500",
+                hachiware: "bg-blue-400 hover:bg-blue-500",
+                usagi: "bg-yellow-400 hover:bg-yellow-500"
+            };
+
+            const lang = modeConfig.lang;
+
+            return (
+                <div className={`min-h-screen flex flex-col max-w-3xl mx-auto bg-white shadow-2xl overflow-hidden border-x-4 ${themeClasses[themeColor].split(' ').pop()}`}>
+                    {/* Header */}
+                    <div className={`p-4 flex justify-between items-center bg-gradient-to-r ${themeClasses[themeColor]} border-b-4`}>
+                        <button onClick={onBack} className={`text-white px-4 py-2 rounded-full font-bold shadow-md transform hover:scale-105 transition-transform ${btnClasses[themeColor]}`}>
+                             ← {getText(lang, 'menu')}
+                        </button>
+                        <div className="flex gap-4">
+                            <div className="bg-white/80 px-4 py-1 rounded-full font-bold shadow-sm flex items-center gap-2">
+                                <span>🚩</span> {getText(lang, 'level')} {level}/20
+                            </div>
+                            <div className="bg-white/80 px-4 py-1 rounded-full font-bold shadow-sm flex items-center gap-2 text-yellow-500">
+                                <StarIcon /> {score}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex-1 flex flex-col relative bg-slate-50/50">
+                        {children}
+                    </div>
+                </div>
+            );
+        };
+
+        const BeadGame = ({ modeConfig, onBack }) => {
+            const [level, setLevel] = useState(1);
+            const [score, setScore] = useState(0);
+            const [question, setQuestion] = useState(null);
+            const [columns, setColumns] = useState([]); 
+            const [message, setMessage] = useState("");
+            const [isCorrect, setIsCorrect] = useState(null);
+            
+            // Determine visual theme based on mode
+            const theme = modeConfig.lang === 'zh' ? 'chiikawa' : (modeConfig.defaultCols > 2 ? 'hachiware' : 'usagi');
+
+            useEffect(() => { generateLevel(); }, [level]);
+
+            const generateLevel = () => {
+                setIsCorrect(null);
+                setMessage("");
+                let colsCount = modeConfig.defaultCols;
+                // Challenge levels for 2-digit modes (Mode 1 & 5)
+                if ((modeConfig.id === 1 || modeConfig.id === 5) && level >= 19) colsCount = 3;
+
+                const isMax = Math.random() > 0.5;
+                const isOddTarget = Math.random() > 0.5;
+                let totalBeads, solution;
+                let attempts = 0;
+                do {
+                    const minBeads = 1;
+                    const maxBeads = Math.min(modeConfig.maxBeadsTotal, 9 * colsCount); 
+                    totalBeads = Math.floor(Math.random() * (maxBeads - minBeads + 1)) + minBeads;
+                    solution = solveBeadProblem(totalBeads, colsCount, isMax, isOddTarget);
+                    attempts++;
+                } while (solution === null && attempts < 100);
+
+                if (solution === null) { totalBeads = 3; solution = solveBeadProblem(3, colsCount, true, true); }
+                setColumns(Array(colsCount).fill(0));
+                setQuestion({ totalBeads, isMax, isOddTarget, solution, colsCount });
+            };
+
+            const usedBeads = columns.reduce((a, b) => a + b, 0);
+            const remainingBeads = question ? question.totalBeads - usedBeads : 0;
+
+            const handleColumnClick = (idx) => {
+                if (isCorrect) return;
+                const newCols = [...columns];
+                if (remainingBeads > 0 && newCols[idx] < 9) {
+                    newCols[idx]++;
+                    setColumns(newCols);
+                }
+            };
+            
+            const removeBead = (idx) => {
+                if (isCorrect) return;
+                const newCols = [...columns];
+                if (newCols[idx] > 0) {
+                    newCols[idx]--;
+                    setColumns(newCols);
+                }
+            };
+
+            const checkAnswer = () => {
+                if (remainingBeads !== 0) {
+                    setMessage(modeConfig.lang === 'en' ? "Place all beads!" : "請使用所有數珠！");
+                    return;
+                }
+                const userVal = parseInt(columns.join(''));
+                const userIsOdd = userVal % 2 !== 0;
+                
+                if (userIsOdd !== question.isOddTarget) {
+                    setMessage(modeConfig.lang === 'en' 
+                        ? `Number must be ${question.isOddTarget ? 'Odd' : 'Even'}!` 
+                        : `數字必須是${question.isOddTarget ? '單數' : '雙數'}！`);
+                    return;
+                }
+                if (userVal === question.solution) {
+                    setIsCorrect(true);
+                    setScore(score + 10);
+                    setMessage(getText(modeConfig.lang, 'correct'));
+                } else {
+                    setMessage(getText(modeConfig.lang, 'wrong'));
+                }
+            };
+
+            const nextLevel = () => {
+                if (level < 20) setLevel(level + 1);
+                else setMessage(getText(modeConfig.lang, 'completed'));
+            };
+
+            if (!question) return <div>Loading...</div>;
+
+            const lang = modeConfig.lang;
+            let instruction = null;
+            if (lang === 'zh') {
+                 const sizeStr = question.isMax ? '最大' : '最小';
+                 const digitStr = question.colsCount === 2 ? '兩' : (question.colsCount === 5 ? '五' : question.colsCount);
+                 const parityStr = question.isOddTarget ? '單數' : '雙數';
+                 instruction = (
+                    <>
+                        在算柱上畫 <span className="text-3xl text-pink-500 font-black mx-1 inline-block animate-bounce">{question.totalBeads}</span> 粒算珠，
+                        <div className="mt-2">
+                            表示出 <span className="text-pink-600 font-bold">{sizeStr}</span> 的 <span className="text-pink-600 font-bold">{digitStr}位{parityStr}</span>。
+                        </div>
+                    </>
+                 );
+            } else {
+                 const sizeStr = question.isMax ? 'largest' : 'smallest';
+                 const parityStr = question.isOddTarget ? 'odd' : 'even';
+                 instruction = (
+                    <>
+                        Use <span className="text-3xl text-yellow-500 font-black mx-1 inline-block animate-bounce">{question.totalBeads}</span> beads to make the
+                        <div className="mt-2">
+                             <span className="text-yellow-600 font-bold">{sizeStr}</span> {question.colsCount}-digit <span className="text-yellow-600 font-bold">{parityStr} number</span>.
+                        </div>
+                    </>
+                 );
+            }
+
+            return (
+                <GameContainer modeConfig={modeConfig} level={level} score={score} onBack={onBack} themeColor={theme}>
+                    <div className="p-6 text-center bg-white/50 m-4 rounded-2xl shadow-sm border border-white">
+                        <h2 className="text-xl md:text-2xl font-bold text-gray-700 leading-relaxed">
+                             {instruction}
+                        </h2>
+                        <div className="text-sm text-gray-400 mt-2 font-bold">{getText(lang, 'instructionBead')}</div>
+                    </div>
+
+                    <div className="flex-1 flex flex-col items-center justify-start p-2">
+                         <div className="mb-4 flex gap-2 h-10 items-center bg-white px-4 rounded-full shadow-sm">
+                            <span className="text-sm font-bold text-gray-400">Beads:</span>
+                            {Array(remainingBeads).fill(0).map((_, i) => (
+                                <div key={i} className="w-5 h-5 rounded-full bg-gradient-to-br from-pink-300 to-pink-500 shadow-sm animate-pop"></div>
+                            ))}
+                            {remainingBeads === 0 && <span className="text-green-400 font-bold">✓</span>}
+                        </div>
+
+                        <div className="flex justify-center items-end gap-2 md:gap-6 bg-white p-6 rounded-3xl card-shadow border-4 border-gray-100">
+                            {columns.map((count, idx) => {
+                                const colLabelIdx = question.colsCount - 1 - idx; 
+                                const colName = getText(lang, 'cols')[colLabelIdx];
+                                const isBig = colLabelIdx >= 1; 
+
+                                return (
+                                    <div key={idx} className="flex flex-col items-center group">
+                                        <div 
+                                            className="w-14 md:w-20 h-56 md:h-64 bg-slate-50 rounded-full relative flex flex-col-reverse justify-start items-center p-2 cursor-pointer border-2 border-dashed border-gray-200 hover:border-pink-300 transition-colors"
+                                            onClick={() => handleColumnClick(idx)}
+                                        >
+                                            <div className="absolute top-2 bottom-2 left-1/2 w-1.5 bg-gray-200 -translate-x-1/2 rounded-full z-0"></div>
+                                            {Array(count).fill(0).map((_, bIdx) => (
+                                                <div key={bIdx} className={`z-10 rounded-full shadow-md mb-1 border-2 border-white/50 animate-pop
+                                                        ${isBig ? 'w-12 h-9 bg-gradient-to-br from-orange-300 to-orange-400' : 'w-10 h-7 bg-gradient-to-br from-yellow-300 to-yellow-400'}
+                                                    `}
+                                                ></div>
+                                            ))}
+                                        </div>
+                                        <div className="mt-3 text-center">
+                                            <button 
+                                                onClick={(e) => { e.stopPropagation(); removeBead(idx); }}
+                                                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-red-100 text-gray-400 hover:text-red-400 mb-1 flex items-center justify-center font-bold transition-colors"
+                                                disabled={isCorrect}
+                                            >−</button>
+                                            <div className="text-xs md:text-sm text-gray-500 font-bold bg-gray-100 px-3 py-1 rounded-full">{colName}</div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                    
+                    <ControlPanel 
+                        isCorrect={isCorrect} message={message} lang={lang} 
+                        onReset={() => setColumns(Array(question.colsCount).fill(0))} 
+                        onCheck={checkAnswer} onNext={nextLevel} theme={theme}
+                    />
+                </GameContainer>
+            );
+        };
+
+        const CardGame = ({ modeConfig, onBack }) => {
+            const [level, setLevel] = useState(1);
+            const [score, setScore] = useState(0);
+            const [question, setQuestion] = useState(null);
+            const [hand, setHand] = useState([]); 
+            const [slots, setSlots] = useState([]); 
+            const [message, setMessage] = useState("");
+            const [isCorrect, setIsCorrect] = useState(null);
+
+            const theme = modeConfig.lang === 'zh' ? 'chiikawa' : (modeConfig.slots > 2 ? 'hachiware' : 'usagi');
+
+            useEffect(() => { generateLevel(); }, [level]);
+
+            const generateLevel = () => {
+                setIsCorrect(null);
+                setMessage("");
+                const isMax = Math.random() > 0.5;
+                const isOddTarget = Math.random() > 0.5;
+                let numSlots = modeConfig.slots; 
+                let numCards = (modeConfig.id === 2 || modeConfig.id === 6) ? Math.floor(Math.random() * 3) + 3 : Math.floor(Math.random() * 4) + 5;
+                let availableDigits = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+                let deck = [];
+                let attempts = 0;
+                let solution = null;
+                
+                do {
+                    availableDigits.sort(() => Math.random() - 0.5);
+                    deck = availableDigits.slice(0, numCards);
+                    solution = solveCardProblem(deck, numSlots, isMax, isOddTarget);
+                    attempts++;
+                } while (solution === null && attempts < 50);
+
+                if (solution === null) { deck = [1, 2, 3, 4, 5]; solution = solveCardProblem(deck, numSlots, true, true); }
+                
+                setQuestion({ isMax, isOddTarget, solution, numSlots });
+                setHand(deck.map((val, i) => ({ id: i, val, isUsed: false })));
+                setSlots(Array(numSlots).fill(null));
+            };
+
+            const handleHandClick = (cardIndex) => {
+                if (isCorrect) return;
+                const card = hand[cardIndex];
+                if (card.isUsed) return; 
+                const firstEmpty = slots.findIndex(s => s === null);
+                if (firstEmpty !== -1) {
+                    const newSlots = [...slots];
+                    newSlots[firstEmpty] = card;
+                    setSlots(newSlots);
+                    const newHand = [...hand];
+                    newHand[cardIndex].isUsed = true;
+                    setHand(newHand);
+                }
+            };
+
+            const handleSlotClick = (slotIndex) => {
+                if (isCorrect) return;
+                const card = slots[slotIndex];
+                if (!card) return;
+                const newHand = [...hand];
+                const handIdx = newHand.findIndex(c => c.id === card.id);
+                newHand[handIdx].isUsed = false;
+                setHand(newHand);
+                const newSlots = [...slots];
+                newSlots[slotIndex] = null;
+                setSlots(newSlots);
+            };
+
+            const checkAnswer = () => {
+                if (slots.some(s => s === null)) {
+                    setMessage(modeConfig.lang === 'en' ? "Fill all slots!" : "請填滿所有空格！");
+                    return;
+                }
+                const userVal = parseInt(slots.map(c => c.val).join(''));
+                const userIsOdd = userVal % 2 !== 0;
+                if (userIsOdd !== question.isOddTarget) {
+                    setMessage(modeConfig.lang === 'en' 
+                        ? `Number must be ${question.isOddTarget ? 'Odd' : 'Even'}!` 
+                        : `數字必須是${question.isOddTarget ? '單數' : '雙數'}！`);
+                    return;
+                }
+                if (userVal === question.solution) {
+                    setIsCorrect(true);
+                    setScore(score + 10);
+                    setMessage(getText(modeConfig.lang, 'correct'));
+                } else {
+                    setMessage(getText(modeConfig.lang, 'wrong'));
+                }
+            };
+
+            const nextLevel = () => {
+                if (level < 20) setLevel(level + 1);
+                else setMessage(getText(modeConfig.lang, 'completed'));
+            };
+
+            if (!question) return <div>Loading...</div>;
+            const lang = modeConfig.lang;
+            
+            let instruction = null;
+            if (lang === 'zh') {
+                 const sizeStr = question.isMax ? '最大' : '最小';
+                 const digitStr = question.numSlots === 2 ? '兩' : '五';
+                 const parityStr = question.isOddTarget ? '單數' : '雙數';
+                 instruction = (
+                    <>
+                        請構成 <span className="text-pink-600 font-bold">{sizeStr}</span> 的 <span className="text-pink-600 font-bold">{digitStr}位{parityStr}</span>。
+                    </>
+                 );
+            } else {
+                 const sizeStr = question.isMax ? 'largest' : 'smallest';
+                 const parityStr = question.isOddTarget ? 'odd' : 'even';
+                 instruction = (
+                    <>
+                        Make the <span className="text-yellow-600 font-bold">{sizeStr}</span> {question.numSlots}-digit <span className="text-yellow-600 font-bold">{parityStr} number</span>.
+                    </>
+                 );
+            }
+
+            return (
+                 <GameContainer modeConfig={modeConfig} level={level} score={score} onBack={onBack} themeColor={theme}>
+                    <div className="p-6 text-center bg-white/50 m-4 rounded-2xl shadow-sm border border-white">
+                         <h2 className="text-xl md:text-2xl font-bold text-gray-700 leading-relaxed">
+                             {instruction}
+                        </h2>
+                         <div className="text-sm text-gray-400 mt-2 font-bold">{getText(lang, 'instructionCard')}</div>
+                    </div>
+
+                    <div className="flex-1 flex flex-col items-center justify-center p-4 space-y-8">
+                        {/* Slots */}
+                        <div className="flex gap-2 md:gap-4 items-center justify-center p-6 bg-white rounded-3xl card-shadow border-4 border-gray-100">
+                            {slots.map((card, idx) => (
+                                <div 
+                                    key={idx} 
+                                    onClick={() => handleSlotClick(idx)}
+                                    className={`
+                                        w-14 h-20 md:w-20 md:h-28 rounded-2xl border-4 flex items-center justify-center text-3xl font-black cursor-pointer transition-all
+                                        ${card ? 'bg-white border-pink-400 text-pink-500 shadow-md rotate-1' : 'bg-gray-50 border-gray-200 border-dashed'}
+                                    `}
+                                >
+                                    {card ? card.val : ''}
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Hand */}
+                        <div className="flex flex-wrap gap-3 justify-center">
+                            {hand.map((card, idx) => (
+                                <div 
+                                    key={card.id}
+                                    onClick={() => handleHandClick(idx)}
+                                    className={`
+                                        w-14 h-20 md:w-20 md:h-28 rounded-2xl bg-white border-b-8 border-r-4 border-gray-200 flex items-center justify-center text-3xl font-black cursor-pointer transform transition-all
+                                        ${card.isUsed ? 'opacity-0 pointer-events-none scale-0' : 'hover:-translate-y-2 hover:border-pink-200 hover:text-pink-500 text-gray-600'}
+                                    `}
+                                >
+                                    {card.val}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    
+                    <ControlPanel 
+                        isCorrect={isCorrect} message={message} lang={lang} 
+                        onReset={() => { setSlots(Array(question.numSlots).fill(null)); setHand(hand.map(c => ({...c, isUsed: false}))); }} 
+                        onCheck={checkAnswer} onNext={nextLevel} theme={theme}
+                    />
+                 </GameContainer>
+            );
+        };
+
+        const ControlPanel = ({ isCorrect, message, lang, onReset, onCheck, onNext, theme }) => {
+            const btnColor = {
+                chiikawa: "bg-pink-500 hover:bg-pink-600 border-pink-700",
+                hachiware: "bg-blue-500 hover:bg-blue-600 border-blue-700",
+                usagi: "bg-yellow-500 hover:bg-yellow-600 border-yellow-700"
+            };
+            const activeBtn = btnColor[theme];
+
+            return (
+                <div className="bg-white p-6 border-t border-gray-100 rounded-t-3xl shadow-[0_-4px_20px_rgba(0,0,0,0.05)] flex flex-col items-center gap-4 relative z-10">
+                    <div className={`text-xl font-black h-8 flex items-center gap-2 ${isCorrect ? 'text-green-500' : 'text-red-400'}`}>
+                         {message && (isCorrect ? <span className="animate-bounce">🎉</span> : <span className="animate-shake">🤔</span>)}
+                         {message}
+                    </div>
+                    
+                    {!isCorrect ? (
+                        <div className="flex gap-4 w-full max-w-sm">
+                            <button onClick={onReset} className="flex-1 py-3 rounded-2xl bg-gray-100 text-gray-500 font-bold hover:bg-gray-200 border-b-4 border-gray-300 active:border-b-0 active:translate-y-1 transition-all">
+                                {getText(lang, 'reset')}
+                            </button>
+                            <button onClick={onCheck} className={`flex-1 py-3 rounded-2xl text-white font-bold border-b-4 active:border-b-0 active:translate-y-1 transition-all shadow-lg ${activeBtn}`}>
+                                {getText(lang, 'check')}
+                            </button>
+                        </div>
+                    ) : (
+                        <button onClick={onNext} className="w-full max-w-sm py-4 rounded-2xl bg-green-500 text-white font-bold hover:bg-green-600 border-b-4 border-green-700 active:border-b-0 active:translate-y-1 transition-all shadow-lg animate-pulse">
+                            {getText(lang, 'next')} ➜
+                        </button>
+                    )}
+                </div>
+            );
+        }
+
+        const App = () => {
+            const [mode, setMode] = useState(null);
+            const modeConfigs = {
+                1: { id: 1, type: 'bead', lang: 'zh', defaultCols: 2, maxBeadsTotal: 12 },
+                2: { id: 2, type: 'card', lang: 'zh', slots: 2 },
+                3: { id: 3, type: 'card', lang: 'en', slots: 5 },
+                4: { id: 4, type: 'bead', lang: 'en', defaultCols: 5, maxBeadsTotal: 25 },
+                5: { id: 5, type: 'bead', lang: 'en', defaultCols: 2, maxBeadsTotal: 12 }, // New: English Bead 2-digit
+                6: { id: 6, type: 'card', lang: 'en', slots: 2 } // New: English Card 2-digit
+            };
+            const handleBack = () => setMode(null);
+            if (!mode) return <MainMenu onSelectMode={setMode} />;
+            const config = modeConfigs[mode];
+            return config.type === 'bead' ? <BeadGame modeConfig={config} onBack={handleBack} /> : <CardGame modeConfig={config} onBack={handleBack} />;
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
