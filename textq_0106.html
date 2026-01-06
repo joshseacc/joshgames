@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>應用題大挑戰：完整解題版</title>
+    <style>
+        body {
+            font-family: '微軟正黑體', 'Microsoft JhengHei', sans-serif;
+            background-color: #f0f8ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            user-select: none; /* Prevent default selection to handle custom click selection */
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 95%;
+            max-width: 700px;
+            text-align: center;
+        }
+        h1 { color: #333; margin-bottom: 10px; font-size: 1.5em; }
+        
+        .level-badge {
+            background-color: #FF6B6B;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        /* Question Box with Selectable Text */
+        .question-box {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #eee;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            line-height: 1.8;
+            color: #444;
+            min-height: 80px;
+            text-align: left;
+        }
+        
+        /* Highlighting Styles */
+        .highlight-more { color: #e63946; font-weight: bold; background-color: #ffe5e5; padding: 2px 5px; border-radius: 3px; }
+        .highlight-less { color: #2a9d8f; font-weight: bold; background-color: #e0fbf8; padding: 2px 5px; border-radius: 3px; }
+        .highlight-total { color: #7209b7; font-weight: bold; background-color: #f3e5f5; padding: 2px 5px; border-radius: 3px; }
+
+        /* Interactive Text Styles */
+        .char-span {
+            cursor: default;
+            padding: 2px 1px;
+            border-radius: 3px;
+            transition: background 0.2s;
+        }
+        .selectable .char-span { cursor: pointer; }
+        .selectable .char-span:hover { background-color: #eee; }
+        .char-span.selected { background-color: #FFD700; color: #000; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+
+        /* Visualization Area */
+        .visual-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border: 2px dashed #ccc;
+            position: relative;
+        }
+        .row { display: flex; align-items: center; min-height: 50px; }
+        .label { width: 80px; text-align: right; padding-right: 15px; font-weight: bold; font-size: 1.1em; color: #555; }
+        .bar-wrapper { flex-grow: 1; display: flex; align-items: center; position: relative; }
+        .bar {
+            height: 45px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2em;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            transition: width 0.8s ease-in-out;
+            overflow: hidden;
+            position: relative;
+            min-width: 40px;
+        }
+        
+        .bg-pattern {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0.3;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .bar-less { background-color: #4ECDC4; width: 0; }
+        .bar-more { background-color: #ddd; width: 0; color: #333; }
+        .bar-more.active { background-color: #FFD93D; color: #333; }
+
+        /* Difference Brace - No + sign now */
+        .diff-brace {
+            position: absolute;
+            top: -25px;
+            right: 0;
+            border-top: 2px solid #e63946;
+            border-left: 2px solid #e63946;
+            border-right: 2px solid #e63946;
+            height: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            color: #e63946;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        
+        .total-brace {
+            position: absolute;
+            right: -20px;
+            top: 10px;
+            bottom: 10px;
+            width: 15px;
+            border-right: 3px solid #7209b7;
+            border-top: 3px solid #7209b7;
+            border-bottom: 3px solid #7209b7;
+            border-radius: 0 10px 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .total-label {
+            position: absolute;
+            right: -60px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #7209b7;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        /* Interaction Zone */
+        .interaction-area {
+            background-color: #e8f4f8;
+            padding: 20px;
+            border-radius: 15px;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .instruction { font-size: 1.1em; margin-bottom: 15px; color: #333; font-weight: bold;}
+        
+        .choice-btn {
+            padding: 10px 25px;
+            margin: 0 10px;
+            font-size: 1.2em;
+            border: 2px solid #ccc;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .choice-btn:hover { background: #f0f0f0; transform: translateY(-2px); }
+        
+        .calc-input {
+            padding: 10px;
+            font-size: 1.3em;
+            width: 120px;
+            text-align: center;
+            border: 2px solid #888;
+            border-radius: 8px;
+        }
+        .submit-btn {
+            padding: 10px 20px;
+            font-size: 1.1em;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .feedback { margin-top: 15px; font-weight: bold; height: 20px; font-size: 1.1em; }
+        .correct { color: #2e7d32; }
+        .wrong { color: #d32f2f; }
+        .hint { color: #f57c00; font-size: 0.9em; margin-top: 5px; }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="intro-screen">
+        <h1>應用題大偵探 (完整版) 🕵️‍♀️</h1>
+        <p>我們這次要挑戰完整的解題過程！</p>
+        <p>不只要算出答案，還要找出單位的和答句喔！</p>
+        <br>
+        <button class="submit-btn" onclick="startGame()">開始挑戰</button>
+    </div>
+
+    <div id="game-screen" class="hidden">
+        <div class="level-badge" id="level-indicator">第四題</div>
+        
+        <!-- Interactive Question Text -->
+        <div class="question-box" id="question-box"></div>
+
+        <!-- Visual Bar Model Area -->
+        <div class="visual-container" id="visual-container">
+            <div class="row">
+                <div class="label" id="label-less">紅花</div>
+                <div class="bar-wrapper">
+                    <div class="bar bar-less" id="bar-less">
+                        <div class="bg-pattern" id="pattern-less"></div>
+                        <span id="val-less-text" style="z-index:2; position:relative;"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="label" id="label-more">黃花</div>
+                <div class="bar-wrapper">
+                    <div class="bar bar-more" id="bar-more">
+                        <div class="bg-pattern" id="pattern-more"></div>
+                        <span id="val-more-text" style="z-index:2; position:relative;">?</span>
+                    </div>
+                    <!-- Difference Brace -->
+                    <div id="diff-visual" class="hidden" style="position: absolute; height: 100%; top:0;"></div>
+                </div>
+            </div>
+
+            <!-- Total Brace -->
+            <div id="total-visual" class="total-brace hidden"></div>
+            <div id="total-label" class="total-label hidden">?</div>
+        </div>
+
+        <!-- Interaction Area -->
+        <div class="interaction-area">
+            <div class="instruction" id="instruction"></div>
+            <div id="controls"></div>
+            <div class="feedback" id="feedback"></div>
+        </div>
+    </div>
+
+    <div id="success-screen" class="hidden">
+        <h1>🎉 任務完成！</h1>
+        <p>太棒了！你已經學會了：</p>
+        <p>✅ 判斷多與少</p>
+        <p>✅ 選擇加法或減法</p>
+        <p>✅ 找出正確的單位和答句</p>
+        <button class="submit-btn" onclick="location.reload()">再玩一次</button>
+    </div>
+</div>
+
+<script>
+    const levels = [
+        {
+            id: 1,
+            title: "第四題：公園的花",
+            text_full: "公園有紅花25朵，紅花比黃花少36朵，兩種花共有多少朵？",
+            // Indices for highlighting specific parts (start inclusive, end exclusive)
+            // Note: indices need to be carefully counted on text_full
+            parts: {
+                intro_range: [0, 8],     // "公園有紅花25朵"
+                compare_range: [9, 18],  // "紅花比黃花少36朵"
+                ask_range: [19, 29]      // "兩種花共有多少朵？"
+            },
+            
+            item_less_name: "紅花",
+            item_more_name: "黃花",
+            val_less: 25,
+            diff: 36,
+            val_more: 61,
+            val_total: 86,
+            
+            unit: "朵",
+            ans_phrase_keywords: ["兩種花共有", "共", "兩種花"], // Keywords acceptable for final highlight
+            
+            icon_less: "🌹",
+            icon_more: "🌻"
+        },
+        {
+            id: 2,
+            title: "第五題：貼紙收集",
+            text_full: "小美有貼紙15張，小文的貼紙比她多20張，二人共有貼紙多少張？",
+            parts: {
+                intro_range: [0, 8],     // "小美有貼紙15張"
+                compare_range: [9, 20],  // "小文的貼紙比她多20張"
+                ask_range: [21, 31]      // "二人共有貼紙多少張？"
+            },
+            
+            item_less_name: "小美",
+            item_more_name: "小文",
+            val_less: 15,
+            diff: 20,
+            val_more: 35,
+            val_total: 50,
+            
+            unit: "張",
+            ans_phrase_keywords: ["二人共有", "共有", "共有貼紙"],
+            
+            icon_less: "👧",
+            icon_more: "👦"
+        }
+    ];
+
+    let currentLvlIdx = 0;
+    let currentPhase = 0; 
+    /* 0: Intro (Plain)
+       1: Compare (Who is more?)
+       2: Calc More (No Hints)
+       3: Recall Less
+       4: Calc Total (No Hints)
+       5: Select Unit (Highlight text)
+       6: Select Answer Sentence (Highlight text)
+    */
+    
+    const scale = 3.5; 
+
+    function startGame() {
+        document.getElementById('intro-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        loadLevel(0);
+    }
+
+    function loadLevel(idx) {
+        currentLvlIdx = idx;
+        const data = levels[idx];
+        
+        document.getElementById('level-indicator').innerText = data.title;
+        document.getElementById('label-less').innerText = data.item_less_name;
+        document.getElementById('label-more').innerText = data.item_more_name;
+        
+        // Reset Visuals
+        const barLess = document.getElementById('bar-less');
+        const barMore = document.getElementById('bar-more');
+        
+        barLess.style.width = '0px';
+        barMore.style.width = '0px';
+        barMore.classList.remove('active');
+        document.getElementById('val-less-text').innerText = '';
+        document.getElementById('val-more-text').innerText = '?';
+        document.getElementById('diff-visual').classList.add('hidden');
+        document.getElementById('total-visual').classList.add('hidden');
+        document.getElementById('total-label').classList.add('hidden');
+
+        document.getElementById('pattern-less').innerText = data.icon_less.repeat(20);
+        document.getElementById('pattern-more').innerText = data.icon_more.repeat(20);
+
+        // Render Text (Initially plain)
+        renderText(null); 
+        
+        setPhase(0);
+    }
+
+    // Helper to render text with spans
+    // highlightRange: [start, end, className]
+    // interactionMode: boolean (if true, spans are clickable)
+    function renderText(highlightConfig, interactionMode = false) {
+        const data = levels[currentLvlIdx];
+        const box = document.getElementById('question-box');
+        box.innerHTML = '';
+        box.className = 'question-box' + (interactionMode ? ' selectable' : '');
+
+        const text = data.text_full;
+        
+        for (let i = 0; i < text.length; i++) {
+            const span = document.createElement('span');
+            span.innerText = text[i];
+            span.className = 'char-span';
+            span.dataset.idx = i;
+            
+            // Apply Highlight if in range
+            if (highlightConfig && i >= highlightConfig[0] && i < highlightConfig[1]) {
+                span.classList.add(highlightConfig[2]);
+            }
+
+            // Click Handler for Selection Phases
+            if (interactionMode) {
+                span.onclick = function() {
+                    this.classList.toggle('selected');
+                };
+            }
+
+            box.appendChild(span);
+        }
+    }
+
+    function setPhase(phase) {
+        currentPhase = phase;
+        const data = levels[currentLvlIdx];
+        const instruction = document.getElementById('instruction');
+        const controls = document.getElementById('controls');
+        const feedback = document.getElementById('feedback');
+        
+        feedback.innerText = '';
+        controls.innerHTML = ''; 
+
+        switch(phase) {
+            case 0: // Plain Text
+                renderText(null);
+                setTimeout(() => setPhase(1), 1500);
+                break;
+
+            case 1: // Compare
+                renderText(null); // Keep plain for this step? Or highlight? Let's keep plain to force reading.
+                instruction.innerText = "1. 請問哪一邊的數量比較多？";
+                
+                // Show Less Bar
+                const barLess = document.getElementById('bar-less');
+                barLess.style.width = (data.val_less * scale) + 'px';
+                barLess.querySelector('span').innerText = data.val_less;
+
+                controls.innerHTML = `
+                    <button class="choice-btn" onclick="checkCompare('${data.item_less_name}')">${data.icon_less} ${data.item_less_name}</button>
+                    <button class="choice-btn" onclick="checkCompare('${data.item_more_name}')">${data.icon_more} ${data.item_more_name}</button>
+                `;
+                break;
+
+            case 2: // Calc More
+                renderText([data.parts.compare_range[0], data.parts.compare_range[1], 'highlight-more']);
+                instruction.innerHTML = `2. 算出<b>${data.item_more_name}</b>有多少？<br><span style="font-weight:normal; font-size:0.9em;">(想一想：變多還是變少？要用加還是減？)</span>`;
+                
+                // Show Ghost Bar
+                const barMore = document.getElementById('bar-more');
+                barMore.style.width = (data.val_less * scale) + 'px';
+                
+                // Visual Brace (No + sign)
+                const diffVis = document.getElementById('diff-visual');
+                diffVis.classList.remove('hidden');
+                diffVis.style.left = (data.val_less * scale) + 'px';
+                diffVis.style.width = (data.diff * scale) + 'px';
+                diffVis.innerHTML = `<span style="position:absolute; top:-20px;">${data.diff}</span>`; // Just the number
+
+                controls.innerHTML = `
+                    <input type="number" id="input-val" class="calc-input" placeholder="?">
+                    <button class="submit-btn" onclick="checkMath(2)">確定</button>
+                `;
+                break;
+
+            case 3: // Recall Less
+                renderText([data.parts.intro_range[0], data.parts.intro_range[1], 'highlight-less']);
+                instruction.innerHTML = `3. 那比較少的<b>${data.item_less_name}</b>有多少？<br><span style="font-weight:normal; font-size:0.9em;">(看看題目怎麼說？)</span>`;
+                
+                controls.innerHTML = `
+                    <input type="number" id="input-val" class="calc-input" placeholder="?">
+                    <button class="submit-btn" onclick="checkMath(3)">確定</button>
+                `;
+                break;
+
+            case 4: // Calc Total
+                renderText([data.parts.ask_range[0], data.parts.ask_range[1], 'highlight-total']);
+                instruction.innerHTML = `4. 最後算<b>共有</b>多少？<br><span style="font-weight:normal; font-size:0.9em;">(${data.item_less_name} 和 ${data.item_more_name})</span>`;
+                
+                const totalVis = document.getElementById('total-visual');
+                const totalLbl = document.getElementById('total-label');
+                totalVis.classList.remove('hidden');
+                totalLbl.classList.remove('hidden');
+
+                controls.innerHTML = `
+                    <input type="number" id="input-val" class="calc-input" placeholder="?">
+                    <button class="submit-btn" onclick="checkMath(4)">確定</button>
+                `;
+                break;
+            
+            case 5: // Select Unit
+                renderText(null, true); // Enable selection
+                instruction.innerHTML = `5. 答案是 ${data.val_total}，但單位是什麼？<br><span style="color:#e63946">請直接點擊題目中的字！</span>`;
+                controls.innerHTML = `<button class="submit-btn" onclick="checkSelection(5)">選好了</button>`;
+                break;
+
+            case 6: // Select Answer Phrase
+                renderText(null, true);
+                instruction.innerHTML = `6. 最後要寫答句：「_______有 ${data.val_total} ${data.unit}」。<br><span style="color:#e63946">請在題目中把前面的字選出來！</span>`;
+                controls.innerHTML = `<button class="submit-btn" onclick="checkSelection(6)">選好了</button>`;
+                break;
+        }
+    }
+
+    function checkCompare(choice) {
+        const data = levels[currentLvlIdx];
+        const feedback = document.getElementById('feedback');
+        
+        if (choice === data.item_more_name) {
+            feedback.innerHTML = `<span class='correct'>答對了！${data.item_more_name}比較多！</span>`;
+            setTimeout(() => setPhase(2), 1000);
+        } else {
+            feedback.innerHTML = `<span class='wrong'>不對喔，再讀一次題目：『${data.text_full.substring(data.parts.compare_range[0], data.parts.compare_range[1])}』</span>`;
+        }
+    }
+
+    function checkMath(phase) {
+        const data = levels[currentLvlIdx];
+        const input = parseInt(document.getElementById('input-val').value);
+        const feedback = document.getElementById('feedback');
+        
+        let correctVal, successMsg;
+        
+        if (phase === 2) {
+            correctVal = data.val_more;
+            successMsg = `正確！用加法：${data.val_less} + ${data.diff} = ${data.val_more}`;
+        } else if (phase === 3) {
+            correctVal = data.val_less;
+            successMsg = `沒錯！紅花是 ${data.val_less}！`;
+        } else if (phase === 4) {
+            correctVal = data.val_total;
+            successMsg = `太棒了！總共：${data.val_less} + ${data.val_more} = ${data.val_total}`;
+        }
+
+        if (input === correctVal) {
+            feedback.innerHTML = `<span class='correct'>${successMsg}</span>`;
+            
+            if (phase === 2) {
+                const barMore = document.getElementById('bar-more');
+                barMore.style.width = (data.val_more * scale) + 'px';
+                barMore.classList.add('active');
+                document.getElementById('val-more-text').innerText = data.val_more;
+                document.getElementById('diff-visual').classList.add('hidden');
+            }
+
+            setTimeout(() => {
+                setPhase(phase + 1);
+            }, 1500);
+        } else {
+            // Smart Feedback for Wrong Operations
+            if (phase === 2 && input === (data.val_less - data.diff)) {
+                 feedback.innerHTML = "<span class='wrong'>那是減法喔！黃花比較多，應該用加法！</span>";
+            } else if (phase === 4 && input === data.val_more) {
+                 feedback.innerHTML = "<span class='wrong'>那是黃花的數量，題目問的是『共有』多少喔！</span>";
+            } else {
+                 feedback.innerHTML = "<span class='wrong'>算錯囉，再想一想！</span>";
+            }
+        }
+    }
+
+    function checkSelection(phase) {
+        const data = levels[currentLvlIdx];
+        const feedback = document.getElementById('feedback');
+        
+        // Get all selected text
+        const selectedSpans = document.querySelectorAll('.char-span.selected');
+        let selectedText = "";
+        selectedSpans.forEach(span => selectedText += span.innerText);
+        
+        if (selectedText.length === 0) {
+            feedback.innerHTML = "<span class='wrong'>請先點擊題目上的字！</span>";
+            return;
+        }
+
+        if (phase === 5) { // Check Unit
+            if (selectedText.includes(data.unit)) {
+                feedback.innerHTML = `<span class='correct'>答對了！單位是「${data.unit}」！</span>`;
+                setTimeout(() => setPhase(6), 1000);
+            } else {
+                feedback.innerHTML = `<span class='wrong'>不對喔，數字 ${data.val_total} 後面應該是什麼？(找找看「${data.unit}」)</span>`;
+            }
+        } else if (phase === 6) { // Check Answer Phrase
+            // Flexible check: Does the selected text contain main keywords?
+            let correct = false;
+            data.ans_phrase_keywords.forEach(key => {
+                if (selectedText.includes(key)) correct = true;
+            });
+
+            if (correct) {
+                feedback.innerHTML = "<span class='correct'>很好！這就是完整的答句！</span>";
+                setTimeout(() => {
+                    if (currentLvlIdx < levels.length - 1) {
+                        loadLevel(currentLvlIdx + 1);
+                    } else {
+                        document.getElementById('game-screen').classList.add('hidden');
+                        document.getElementById('success-screen').classList.remove('hidden');
+                    }
+                }, 1500);
+            } else {
+                feedback.innerHTML = "<span class='wrong'>試試看選出「兩種花共有」這幾個字？</span>";
+            }
+        }
+    }
+</script>
+
+</body>
+</html>
