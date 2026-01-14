@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Joshua 小一期考詞辨大挑戰</title>
+    <style>
+        body { font-family: 'KaiTi', 'BiauKai', sans-serif; background-color: #e0f7fa; text-align: center; padding: 10px; }
+        h1 { color: #006064; font-size: 28px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .score-board { font-size: 20px; color: #00838f; margin-bottom: 20px; font-weight: bold; }
+        .question-box { font-size: 32px; margin: 30px 0; line-height: 1.8; color: #333; }
+        .highlight { color: #e91e63; text-decoration: underline; }
+        .options { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        .btn { padding: 15px 30px; font-size: 26px; border: none; border-radius: 12px; cursor: pointer; color: white; transition: transform 0.1s; width: 100%; max-width: 200px; }
+        .btn:active { transform: scale(0.95); }
+        .btn-1 { background-color: #ff9800; }
+        .btn-2 { background-color: #4caf50; }
+        .btn-3 { background-color: #2196f3; }
+        .feedback { height: 50px; margin-top: 20px; font-size: 28px; font-weight: bold; }
+        .correct { color: #2e7d32; }
+        .wrong { color: #c62828; }
+        .progress-bar { width: 100%; background-color: #ddd; border-radius: 10px; margin-top: 20px; height: 20px; overflow: hidden; }
+        .progress-fill { height: 100%; background-color: #00bcd4; width: 0%; transition: width 0.3s; }
+        .restart-btn { margin-top: 30px; padding: 10px 20px; font-size: 20px; background-color: #607d8b; color: white; border: none; border-radius: 8px; cursor: pointer; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🏆 Joshua 詞辨大挑戰</h1>
+    <div class="score-board">分數：<span id="score">0</span> / <span id="total">0</span></div>
+    
+    <div class="progress-bar">
+        <div class="progress-fill" id="progress"></div>
+    </div>
+
+    <div id="quiz-area">
+        <div class="question-box" id="question">準備好了嗎？</div>
+        <div class="options" id="options">
+            <button class="btn btn-3" onclick="startGame()">開始遊戲 ▶️</button>
+        </div>
+    </div>
+
+    <div class="feedback" id="feedback"></div>
+    <button class="restart-btn" id="restart" onclick="startGame()">再玩一次 🔄</button>
+</div>
+
+<script>
+    // 根據最新通告範圍製作的題庫
+    const allQuestions = [
+        // 第5組：郊外 vs 公園
+        { q: "星期天，我們一家人去______旅行。", options: ["郊外", "公園"], answer: "郊外" },
+        { q: "我家樓下有一個小______，很多人在那裡跑步。", options: ["郊外", "公園"], answer: "公園" },
+        
+        // 第10組：晚上 vs 晚飯
+        { q: "媽媽正在廚房準備______。", options: ["晚上", "晚飯"], answer: "晚飯" },
+        { q: "______十時了，你要快點睡覺。", options: ["晚上", "晚飯"], answer: "晚上" },
+        
+        // 第11組：美麗 vs 漂亮
+        { q: "這裡的風景十分______。", options: ["美麗", "漂亮"], answer: "美麗" },
+        { q: "姐姐今天穿了一條______的裙子。", options: ["美麗", "漂亮"], answer: "漂亮" },
+        
+        // 第12組：請 vs 猜
+        { q: "老師______我們打開書本。", options: ["請", "猜"], answer: "請" },
+        { q: "你______一______我的口袋裏有甚麼？", options: ["請", "猜"], answer: "猜" },
+        
+        // 第13組：親愛 vs 可愛
+        { q: "______的爸爸，早安。", options: ["親愛", "可愛"], answer: "親愛" },
+        { q: "這隻小白兔長著長長的耳朵，十分______。", options: ["親愛", "可愛"], answer: "可愛" },
+        
+        // 第19組：拾起 vs 找到
+        { q: "我看見地上有一枝筆，便把它______。", options: ["拾起", "找到"], answer: "拾起" },
+        { q: "我終於______我不見了的擦膠了！", options: ["拾起", "找到"], answer: "找到" },
+        
+        // 第20組：祝福 vs 感謝
+        { q: "聖誕節到了，我寫了一張卡______大家。", options: ["祝福", "感謝"], answer: "祝福" },
+        { q: "我______媽媽每天照顧我。", options: ["祝福", "感謝"], answer: "感謝" },
+        
+        // 第21組：一片 vs 一顆 vs 一條 (量詞)
+        { q: "天上有一______白雲。", options: ["一片", "一顆", "一條"], answer: "一片" },
+        { q: "樹上掛滿了______紅紅的蘋果。", options: ["一片", "一顆", "一條"], answer: "一顆" },
+        { q: "小河裏有一______小魚在游水。", options: ["一片", "一顆", "一條"], answer: "一條" },
+        { q: "地上有______黃葉。", options: ["一片", "一顆", "一條"], answer: "一片" },
+        { q: "媽媽有一______美麗的項鍊。", options: ["一片", "一顆", "一條"], answer: "一條" }
+    ];
+
+    let currentQuestions = [];
+    let currentIndex = 0;
+    let score = 0;
+
+    function startGame() {
+        // 洗牌
+        currentQuestions = [...allQuestions].sort(() => Math.random() - 0.5);
+        currentIndex = 0;
+        score = 0;
+        
+        document.getElementById('score').innerText = 0;
+        document.getElementById('total').innerText = currentQuestions.length;
+        document.getElementById('restart').style.display = 'none';
+        document.getElementById('feedback').innerText = '';
+        
+        updateProgress();
+        showQuestion();
+    }
+
+    function showQuestion() {
+        if (currentIndex >= currentQuestions.length) {
+            endGame();
+            return;
+        }
+
+        const qData = currentQuestions[currentIndex];
+        
+        // 顯示題目 (將底線變成顯眼顏色)
+        const qText = qData.q.replace("______", "<span class='highlight'>______</span>");
+        document.getElementById('question').innerHTML = qText;
+
+        const optionsDiv = document.getElementById('options');
+        optionsDiv.innerHTML = "";
+        
+        // 產生按鈕
+        qData.options.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.className = `btn btn-${index + 1}`; // 不同顏色
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(opt, qData.answer);
+            optionsDiv.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selected, correct) {
+        const feedback = document.getElementById('feedback');
+        if (selected === correct) {
+            score++;
+            document.getElementById('score').innerText = score;
+            feedback.innerHTML = "<span class='correct'>✅ 答對了！</span>";
+            playSound(true);
+            setTimeout(() => {
+                feedback.innerText = "";
+                currentIndex++;
+                updateProgress();
+                showQuestion();
+            }, 1000);
+        } else {
+            feedback.innerHTML = "<span class='wrong'>❌ 哎呀，試多次！</span>";
+            playSound(false);
+        }
+    }
+
+    function updateProgress() {
+        const percentage = (currentIndex / currentQuestions.length) * 100;
+        document.getElementById('progress').style.width = percentage + "%";
+    }
+
+    function endGame() {
+        document.getElementById('question').innerText = "🎉 遊戲完成！";
+        document.getElementById('options').innerHTML = "";
+        
+        let finalMsg = "";
+        if (score === currentQuestions.length) {
+            finalMsg = "🌟 滿分！Joshua 你太厲害了！";
+        } else {
+            finalMsg = `做得好！答對了 ${score} 題。`;
+        }
+        
+        document.getElementById('feedback').innerHTML = finalMsg;
+        document.getElementById('progress').style.width = "100%";
+        document.getElementById('restart').style.display = 'inline-block';
+    }
+
+    function playSound(isCorrect) {
+        // 簡單的音效邏輯，可擴充
+    }
+</script>
+
+</body>
+</html>
