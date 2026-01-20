@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Joshua's English Express 🚂</title>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg: #f0f9ff;
+        }
+        
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: #1e40af;
+            text-align: center;
+            text-shadow: 2px 2px 0px #bfdbfe;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        /* Menu Styles */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .station-card {
+            background: white;
+            border: 4px solid var(--primary);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .station-card:hover {
+            transform: translateY(-5px);
+            background: #eff6ff;
+        }
+
+        .station-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .station-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        /* Game Area Styles */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px dashed #cbd5e1;
+        }
+
+        .progress-bar {
+            flex-grow: 1;
+            height: 10px;
+            background: #e2e8f0;
+            border-radius: 5px;
+            margin: 0 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .question-box {
+            font-size: 1.5em;
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .highlight-word {
+            display: inline-block;
+            padding: 5px 10px;
+            margin: 2px;
+            border-radius: 5px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .highlight-word:hover {
+            background: #dbeafe;
+        }
+
+        .highlight-word.selected {
+            background: var(--primary);
+            color: white;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .option-btn {
+            padding: 15px;
+            font-size: 1.2em;
+            border: 3px solid #cbd5e1;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .option-btn:hover {
+            background: #f1f5f9;
+            border-color: var(--primary);
+        }
+
+        .option-btn.correct {
+            background: #dcfce7;
+            border-color: var(--success);
+            color: #166534;
+        }
+
+        .option-btn.wrong {
+            background: #fee2e2;
+            border-color: var(--danger);
+            color: #991b1b;
+        }
+
+        .feedback-area {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.2em;
+            min-height: 50px;
+            font-weight: bold;
+        }
+
+        .nav-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            display: none; /* Hidden by default */
+            margin: 20px auto 0;
+        }
+
+        .home-btn {
+            background: #64748b;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* Station 4 Specific */
+        .gw-data-card {
+            background: #fffbeb;
+            border: 2px solid var(--warning);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <h1>🚂 Joshua's English Express</h1>
+
+    <div id="main-menu" class="container">
+        <h2 style="text-align:center">Choose a Station to Start!</h2>
+        <div class="menu-grid">
+            <div class="station-card" onclick="startGame(1)">
+                <span class="station-icon">🔠</span>
+                <div class="station-title">Station 1<br>Capital Letters</div>
+                <small>Fix the small letters!</small>
+            </div>
+            <div class="station-card" onclick="startGame(2)">
+                <span class="station-icon">👦👧</span>
+                <div class="station-title">Station 2<br>Pronouns</div>
+                <small>He, She, It, We, They</small>
+            </div>
+            <div class="station-card" onclick="startGame(3)">
+                <span class="station-icon">🍎🍊</span>
+                <div class="station-title">Station 3<br>Commas</div>
+                <small>A, B and C</small>
+            </div>
+            <div class="station-card" onclick="startGame(4)">
+                <span class="station-icon">📝</span>
+                <div class="station-title">Station 4<br>Guided Writing</div>
+                <small>Perfect Paragraphs</small>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-area" class="container hidden">
+        <div class="game-header">
+            <button class="home-btn" onclick="showMenu()">🏠 Home</button>
+            <div class="progress-bar"><div id="progress" class="progress-fill"></div></div>
+            <span id="score-display">⭐ 0</span>
+        </div>
+
+        <div id="quiz-content">
+            </div>
+
+        <div id="feedback" class="feedback-area"></div>
+        <button id="next-btn" class="nav-btn" onclick="nextQuestion()">Next Train ➡️</button>
+    </div>
+
+    <div id="result-screen" class="container hidden" style="text-align:center">
+        <h2>🎉 Station Complete! 🎉</h2>
+        <div style="font-size: 4em; margin: 20px;">🏆</div>
+        <p id="final-score" style="font-size: 1.5em;"></p>
+        <button class="nav-btn" style="display:inline-block" onclick="showMenu()">Back to Menu</button>
+    </div>
+
+    <script>
+        // --- GAME DATA ---
+        
+        const station1Data = [
+            { text: "my school starts in september.", correctIndices: [0, 4], hint: "Start of sentence & Month" },
+            { text: "this is my friend, tom.", correctIndices: [0, 4], hint: "Start of sentence & Name" },
+            { text: "we go to the park on sunday.", correctIndices: [0, 6], hint: "Start of sentence & Day" },
+            { text: "is mary happy?", correctIndices: [0, 1], hint: "Start of sentence & Name" },
+            { text: "i live in kowloon tong.", correctIndices: [0, 3, 4], hint: "'I', Place name parts" },
+            { text: "peter and i play football.", correctIndices: [0, 2], hint: "Name & 'I'" },
+            { text: "disneyland is fun.", correctIndices: [0], hint: "Place name/Start" },
+            { text: "miss lee is our teacher.", correctIndices: [0, 1], hint: "Title & Name" },
+            { text: "my birthday is in october.", correctIndices: [0, 4], hint: "Start & Month" },
+            { text: "good morning, jason.", correctIndices: [0, 2], hint: "Start & Name" }
+        ];
+
+        const station2Data = [
+            { img: "👦 (Tom)", q: "___ is tall.", options: ["He", "She", "It"], correct: 0 },
+            { img: "👧 (Sarah)", q: "___ is pretty.", options: ["He", "She", "It"], correct: 1 },
+            { img: "🐶 (Dog)", q: "___ is cute.", options: ["He", "She", "It"], correct: 2 },
+            { img: "👦👦 (Tom & Ben)", q: "___ are brothers.", options: ["We", "They", "It"], correct: 1 },
+            { img: "👩‍⚕️ (Mother)", q: "___ is a nurse.", options: ["He", "She", "It"], correct: 1 },
+            { img: "🪑 (Table)", q: "___ is brown.", options: ["He", "She", "It"], correct: 2 },
+            { img: "👥 (You and I)", q: "___ are students.", options: ["We", "They", "He"], correct: 0 },
+            { img: "👮‍♂️ (Mr. Chan)", q: "___ is a policeman.", options: ["He", "She", "It"], correct: 0 },
+            { img: "🐱🐱 (Cats)", q: "___ are sleeping.", options: ["We", "They", "It"], correct: 1 },
+            { img: "⚽ (Ball)", q: "___ is round.", options: ["He", "She", "It"], correct: 2 }
+        ];
+
+        const station3Data = [
+            { items: "🍎 🍊 🍐", q: "I like an apple an orange and a pear.", options: ["apple, an orange, and a pear.", "apple, an orange and a pear.", "apple an orange, and a pear."], correct: 1 },
+            { items: "🖊️ 📏 🩹", q: "I have a pen a ruler and a rubber.", options: ["a pen, a ruler and a rubber.", "a pen a ruler, and a rubber.", "a pen, a ruler, and a rubber."], correct: 0 },
+            { items: "🧢 👕 👟", q: "He is wearing a hat a shirt and shoes.", options: ["a hat a shirt, and shoes.", "a hat, a shirt and shoes.", "a hat, a shirt, and shoes."], correct: 1 },
+            { items: "🔴 🔵 🟢", q: "I like red blue and green.", options: ["red, blue and green.", "red blue, and green.", "red, blue, and green."], correct: 0 },
+            { items: "🐱 🐶 🐦 🐟", q: "I see a cat a dog a bird and a fish.", options: ["a cat, a dog, a bird and a fish.", "a cat, a dog a bird, and a fish.", "a cat, a dog, a bird, and a fish."], correct: 0 },
+            { items: "👢 🧤 🧣", q: "She is wearing boots gloves and a scarf.", options: ["boots gloves, and a scarf.", "boots, gloves and a scarf.", "boots, gloves, and a scarf."], correct: 1 },
+            { items: "👦 👧 👦", q: "Peter Mary and Tom are here.", options: ["Peter, Mary and Tom", "Peter Mary, and Tom", "Peter, Mary, and Tom"], correct: 0 },
+            { items: "🥛 🍞 🥚", q: "I eat milk bread and an egg.", options: ["milk, bread and an egg.", "milk bread, and an egg.", "milk, bread, and an egg."], correct: 0 },
+            { items: "👤", q: "Head shoulders knees and toes.", options: ["Head, shoulders, knees and toes.", "Head, shoulders knees, and toes.", "Head shoulders, knees and toes."], correct: 0 },
+            { items: "🚗 🚌 🚆", q: "Look at the car the bus and the train.", options: ["the car, the bus and the train.", "the car, the bus, and the train.", "the car the bus, and the train."], correct: 0 }
+        ];
+
+        const station4Data = [
+            { 
+                info: "Name: Tim (Cute) | Clothes: green cap, yellow T-shirt, blue jeans | Feeling: Happy",
+                options: [
+                    "Tim is a cute boy. He is wearing green cap, yellow T-shirt and blue jeans. He is happy.",
+                    "Tim is a cute boy. He is wearing a green cap, a yellow T-shirt and blue jeans. He is happy.",
+                    "Tim is a cute boy He is wearing a green cap a yellow T-shirt and blue jeans He is happy."
+                ], correct: 1
+            },
+            { 
+                info: "Name: Lily (Pretty) | Clothes: pink dress, red shoes | Feeling: Sad",
+                options: [
+                    "Lily is a pretty girl. She is wearing a pink dress and red shoes. She is sad.",
+                    "Lily is a pretty girl. She is wearing a pink dress, and red shoes. She is sad.",
+                    "lily is a pretty girl. She is wearing a pink dress and red shoes. She is sad."
+                ], correct: 0
+            },
+            { 
+                info: "Name: Mr. Lee (Tall) | Clothes: black tie, white shirt, grey trousers | Feeling: Angry",
+                options: [
+                    "Mr. Lee is a tall man. He is wearing a black tie, a white shirt and grey trousers. He is angry.",
+                    "Mr. Lee is a tall man. He is wearing a black tie a white shirt and grey trousers. He is angry.",
+                    "Mr. Lee is a tall man. He is wearing black tie, white shirt and grey trousers. He is angry."
+                ], correct: 0
+            },
+            { 
+                info: "Name: Ben (Handsome) | Clothes: orange watch, blue vest, brown shorts | Feeling: Hungry",
+                options: [
+                    "Ben is a handsome boy. He is wearing a orange watch, a blue vest and brown shorts. He is hungry.",
+                    "Ben is a handsome boy. He is wearing an orange watch, a blue vest and brown shorts. He is hungry.",
+                    "Ben is a handsome boy. He is wearing an orange watch, a blue vest and a brown shorts. He is hungry."
+                ], correct: 1
+            },
+            { 
+                info: "Name: Ann (Lovely) | Clothes: purple hat, orange scarf, green boots | Feeling: Scared",
+                options: [
+                    "Ann is a lovely girl. She is wearing a purple hat, a orange scarf and green boots. She is scared.",
+                    "Ann is a lovely girl. She is wearing a purple hat, an orange scarf and green boots. She is scared.",
+                    "Ann is a lovely girl. She is wearing a purple hat an orange scarf and green boots. She is scared."
+                ], correct: 1
+            },
+            { 
+                info: "Name: Sam (Thin) | Clothes: red jacket, blue jeans, white sneakers | Feeling: Excited",
+                options: [
+                    "Sam is a thin boy. He is wearing a red jacket, blue jeans and white sneakers. He is excited.",
+                    "Sam is a thin boy. He is wearing a red jacket, a blue jeans and white sneakers. He is excited.",
+                    "Sam is a thin boy. He is wearing a red jacket blue jeans and white sneakers. He is excited."
+                ], correct: 0
+            },
+            { 
+                info: "Name: Miss Chan (Nice) | Clothes: yellow blouse, purple skirt, black shoes | Feeling: Happy",
+                options: [
+                    "Miss Chan is a nice lady. She is wearing a yellow blouse, a purple skirt and black shoes. She is happy.",
+                    "Miss Chan is a nice lady She is wearing a yellow blouse, a purple skirt and black shoes She is happy",
+                    "Miss Chan is a nice lady. She is wearing a yellow blouse a purple skirt and black shoes. She is happy."
+                ], correct: 0
+            },
+            { 
+                info: "Name: Sue (Short) | Clothes: orange coat, grey gloves, black boots | Feeling: Cold",
+                options: [
+                    "Sue is a short girl. She is wearing a orange coat, grey gloves and black boots. She is cold.",
+                    "Sue is a short girl. She is wearing an orange coat, grey gloves and black boots. She is cold.",
+                    "Sue is a short girl. She is wearing an orange coat, grey gloves and a black boots. She is cold."
+                ], correct: 1
+            },
+            { 
+                info: "Name: Ken (Strong) | Clothes: blue cap, green shorts, white socks | Feeling: Tired",
+                options: [
+                    "Ken is a strong boy. He is wearing a blue cap, green shorts and white socks. He is tired.",
+                    "Ken is a strong boy. He is wearing a blue cap, a green shorts and white socks. He is tired.",
+                    "Ken is a strong boy. He is wearing a blue cap green shorts and white socks. He is tired."
+                ], correct: 0
+            },
+            { 
+                info: "Name: May (Cute) | Clothes: pink glasses, yellow dress, red bag | Feeling: Thirsty",
+                options: [
+                    "May is a cute girl. She is wearing pink glasses, a yellow dress and a red bag. She is thirsty.",
+                    "May is a cute girl. She is wearing a pink glasses, a yellow dress and a red bag. She is thirsty.",
+                    "May is a cute girl. She is wearing pink glasses, a yellow dress, and a red bag. She is thirsty."
+                ], correct: 0
+            }
+        ];
+
+        // --- GAME LOGIC ---
+
+        let currentStation = 0;
+        let currentQIndex = 0;
+        let score = 0;
+        let gameActive = false;
+
+        function showMenu() {
+            document.getElementById('main-menu').classList.remove('hidden');
+            document.getElementById('game-area').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+        }
+
+        function startGame(stationId) {
+            currentStation = stationId;
+            currentQIndex = 0;
+            score = 0;
+            gameActive = true;
+            document.getElementById('main-menu').classList.add('hidden');
+            document.getElementById('game-area').classList.remove('hidden');
+            document.getElementById('score-display').innerHTML = `⭐ 0`;
+            document.getElementById('next-btn').style.display = 'none';
+            document.getElementById('feedback').innerHTML = '';
+            
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const container = document.getElementById('quiz-content');
+            container.innerHTML = '';
+            document.getElementById('feedback').innerHTML = '';
+            document.getElementById('next-btn').style.display = 'none';
+            
+            // Update Progress
+            const total = 10;
+            const pct = (currentQIndex / total) * 100;
+            document.getElementById('progress').style.width = `${pct}%`;
+
+            if (currentQIndex >= total) {
+                endStation();
+                return;
+            }
+
+            // Logic per station
+            if (currentStation === 1) {
+                renderStation1(container);
+            } else if (currentStation === 2) {
+                renderStation2(container);
+            } else if (currentStation === 3) {
+                renderStation3(container);
+            } else if (currentStation === 4) {
+                renderStation4(container);
+            }
+        }
+
+        // STATION 1: Click the words to capitalize
+        function renderStation1(container) {
+            const data = station1Data[currentQIndex];
+            const words = data.text.split(' ');
+            
+            let html = `<h3>Tap the words that need a BIG letter (Capital Letter):</h3>
+                        <div class="question-box">`;
+            
+            words.forEach((word, index) => {
+                html += `<span class="highlight-word" onclick="toggleWord(this, ${index})" data-idx="${index}">${word}</span> `;
+            });
+            html += `</div><button class="nav-btn" style="display:inline-block" onclick="checkStation1()">Check Answer</button>`;
+            
+            container.innerHTML = html;
+        }
+
+        function toggleWord(el, idx) {
+            if(document.getElementById('feedback').innerText !== "") return; // Prevent change after answer
+            el.classList.toggle('selected');
+        }
+
+        function checkStation1() {
+            const data = station1Data[currentQIndex];
+            const selected = document.querySelectorAll('.highlight-word.selected');
+            const selectedIndices = Array.from(selected).map(el => parseInt(el.dataset.idx)).sort();
+            const correctIndices = data.correctIndices.sort();
+            
+            const isCorrect = JSON.stringify(selectedIndices) === JSON.stringify(correctIndices);
+            
+            giveFeedback(isCorrect, isCorrect ? "Good job! You found the Caps!" : `Oops! Hint: ${data.hint}`);
+        }
+
+        // STATION 2: Pronouns
+        function renderStation2(container) {
+            const data = station2Data[currentQIndex];
+            let html = `<h3>Who is the driver? (Choose the correct Pronoun)</h3>
+                        <div class="question-box">
+                            <div style="font-size:1.2em; margin-bottom:10px">${data.img}</div>
+                            ${data.q}
+                        </div>
+                        <div class="options-grid">`;
+            
+            data.options.forEach((opt, idx) => {
+                html += `<button class="option-btn" onclick="checkStation2(this, ${idx})">${opt}</button>`;
+            });
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        function checkStation2(btn, idx) {
+            if(document.getElementById('next-btn').style.display === 'block') return;
+            const data = station2Data[currentQIndex];
+            const isCorrect = idx === data.correct;
+            giveFeedback(isCorrect, isCorrect ? "Correct Driver!" : "Try again!");
+            
+            if(isCorrect) btn.classList.add('correct');
+            else btn.classList.add('wrong');
+        }
+
+        // STATION 3: Commas
+        function renderStation3(container) {
+            const data = station3Data[currentQIndex];
+            let html = `<h3>Fix the cargo list! (Choose the correct punctuation)</h3>
+                        <div class="question-box">${data.items}<br><small>Goal: ${data.q}</small></div>
+                        <div class="options-grid">`;
+            
+            data.options.forEach((opt, idx) => {
+                html += `<button class="option-btn" onclick="checkStation3(this, ${idx})">${opt}</button>`;
+            });
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        function checkStation3(btn, idx) {
+            if(document.getElementById('next-btn').style.display === 'block') return;
+            const data = station3Data[currentQIndex];
+            const isCorrect = idx === data.correct;
+            giveFeedback(isCorrect, isCorrect ? "Perfect punctuation!" : "Remember: A, B and C.");
+            
+            if(isCorrect) btn.classList.add('correct');
+            else btn.classList.add('wrong');
+        }
+
+        // STATION 4: Guided Writing
+        function renderStation4(container) {
+            const data = station4Data[currentQIndex];
+            let html = `<h3>Choose the Perfect Paragraph!</h3>
+                        <div class="gw-data-card">
+                            <strong>Data:</strong> ${data.info}
+                        </div>
+                        <div class="options-grid">`;
+            
+            data.options.forEach((opt, idx) => {
+                html += `<button class="option-btn" style="text-align:left; font-size:1rem" onclick="checkStation4(this, ${idx})">${opt}</button>`;
+            });
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        function checkStation4(btn, idx) {
+            if(document.getElementById('next-btn').style.display === 'block') return;
+            const data = station4Data[currentQIndex];
+            const isCorrect = idx === data.correct;
+            
+            giveFeedback(isCorrect, isCorrect ? "Excellent writing!" : "Look closer! Check for 'a', commas, or capitals.");
+            
+            if(isCorrect) btn.classList.add('correct');
+            else btn.classList.add('wrong');
+        }
+
+        // SHARED FUNCTIONS
+        function giveFeedback(isCorrect, msg) {
+            const fb = document.getElementById('feedback');
+            fb.innerHTML = msg;
+            fb.style.color = isCorrect ? 'var(--success)' : 'var(--danger)';
+            
+            if (isCorrect) {
+                score++;
+                document.getElementById('score-display').innerHTML = `⭐ ${score}`;
+                document.getElementById('next-btn').style.display = 'block';
+                
+                // Play sound (optional, simple beep via context is messy, just visual for now)
+            } else {
+                // If wrong, user can try again for Station 1/2/3/4? 
+                // For simplicity in Station 1, we show next button even if wrong after check?
+                // Let's force them to get it right for multiple choice, but for Station 1 (Select words), maybe just show answer.
+                // For this code logic: If wrong, just show message. If correct, show Next button.
+                // Station 1 exception: The Check button logic handles the state.
+            }
+            
+            if (currentStation === 1 && !isCorrect) {
+                // Allow retry for Station 1
+            }
+        }
+
+        function nextQuestion() {
+            currentQIndex++;
+            loadQuestion();
+        }
+
+        function endStation() {
+            document.getElementById('game-area').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            document.getElementById('final-score').innerHTML = `You got ${score} out of 10!`;
+        }
+
+    </script>
+</body>
+</html>
