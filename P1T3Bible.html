@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>兒童聖經溫習小遊戲</title>
+    <style>
+        /* ================= 整體風格與佈局 ================= */
+        :root {
+            --bg-color: #fff9e6; /* 溫馨粉彩黃 */
+            --primary: #ff9f43;  /* 活力橘 */
+            --secondary: #5f27cd; /* 標題紫 */
+            --success: #1dd1a1;  /* 成功綠 */
+            --danger: #ff6b6b;   /* 錯誤紅 */
+            --tab-bg: #ffeaa7;
+            --text-main: #34495e;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'PingFang HK', 'Microsoft JhengHei', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            color: var(--text-main);
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--secondary);
+            font-size: 28px;
+            margin: 20px 0 10px 0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 10px 20px;
+        }
+
+        /* ================= 頁籤 (Tabs) ================= */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .tab-btn {
+            background-color: var(--tab-bg);
+            border: 3px solid #f39c12;
+            color: #d35400;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 0 #f39c12;
+            font-family: inherit;
+        }
+
+        .tab-btn:hover {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #f39c12;
+        }
+
+        .tab-btn.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: #e67e22;
+            box-shadow: 0 4px 0 #e67e22;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ================= 遊戲 1：人物配對 ================= */
+        .g1-instruction {
+            color: #666;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .g1-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .clue-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .clue-card {
+            background: white;
+            border: 3px dashed var(--primary);
+            border-radius: 15px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+
+        .clue-text {
+            font-size: 17px;
+            font-weight: bold;
+            text-align: left;
+            flex: 1;
+            padding-right: 15px;
+            line-height: 1.4;
+        }
+
+        .drop-zone {
+            width: 70px;
+            height: 70px;
+            background-color: #f1f2f6;
+            border: 3px solid #ced6e0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+
+        .drop-zone.drag-over {
+            background-color: #ffeaa7;
+            transform: scale(1.1);
+        }
+
+        .char-bank {
+            background-color: #fff;
+            border: 3px solid var(--tab-bg);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .char-bank-title {
+            font-size: 18px;
+            color: #b27300;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .char-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .char-item {
+            background-color: #f8f9fa;
+            border: 3px solid #ffcc00;
+            border-radius: 12px;
+            padding: 10px 15px;
+            cursor: grab;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            user-select: none;
+            box-shadow: 0 4px 0 #ffcc00;
+            transition: all 0.2s;
+        }
+
+        .char-item:active {
+            cursor: grabbing;
+        }
+
+        .char-item.selected {
+            background-color: #fff3cd;
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(255, 159, 67, 0.6);
+            transform: scale(1.05);
+        }
+
+        .char-item.hidden {
+            display: none;
+        }
+
+        .char-emoji { font-size: 45px; }
+        .char-name { font-size: 16px; font-weight: bold; margin-top: 5px; color: #d35400; }
+
+        /* ================= 遊戲 2：金句填空 ================= */
+        .verse-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .verse-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+            border-bottom: 5px solid #48dbfb;
+        }
+
+        .verse-text {
+            font-size: 22px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .blank-space {
+            display: inline-block;
+            min-width: 120px;
+            height: 35px;
+            border-bottom: 4px solid var(--text-main);
+            margin: 0 10px;
+            text-align: center;
+            color: transparent;
+            transition: all 0.3s;
+            vertical-align: middle;
+        }
+
+        .blank-space.filled {
+            border-bottom: 4px solid var(--success);
+            color: var(--success);
+            font-size: 24px;
+            font-weight: 900;
+        }
+
+        .options-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .option-btn {
+            background-color: #e0f7fa;
+            border: 2px solid #00bcd4;
+            color: #00838f;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #00bcd4;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .option-btn:hover {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #00bcd4;
+        }
+
+        .option-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .option-btn.correct {
+            background-color: var(--success);
+            border-color: #10ac84;
+            color: white;
+            box-shadow: none;
+            transform: translateY(4px);
+        }
+
+        /* ================= 動畫與提示 ================= */
+        .shake {
+            animation: shake 0.5s;
+            border-color: var(--danger) !important;
+            background-color: #ffeaa7 !important; /* For drop zone warning */
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        .win-message {
+            display: none;
+            background-color: #fff;
+            border: 4px solid var(--success);
+            color: #10ac84;
+            padding: 20px;
+            border-radius: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .restart-btn {
+            margin-top: 15px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            font-size: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 0 #d35400;
+        }
+        .restart-btn:hover { background-color: #e67e22; }
+
+        /* iPad / Mobile 適配 */
+        @media (max-width: 768px) {
+            .tabs { flex-direction: column; align-items: center; }
+            .tab-btn { width: 80%; }
+            .verse-text { font-size: 20px; }
+            .option-btn { font-size: 16px; padding: 10px 15px; }
+            .clue-grid { grid-template-columns: 1fr; }
+            .drop-zone { width: 60px; height: 60px; font-size: 30px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>👼 兒童聖經溫習小遊戲 👼</h1>
+        
+        <!-- 分頁按鈕 -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('game1')">👤 人物配對遊戲</button>
+            <button class="tab-btn" onclick="switchTab('game2')">⭐ 金句填空遊戲</button>
+        </div>
+
+        <!-- ================= 遊戲 1：人物配對 ================= -->
+        <div id="game1" class="tab-content active">
+            <p class="g1-instruction">iPad 小朋友可以「先點擊人物」，再「點擊框框」放入喔！</p>
+            
+            <div class="g1-layout">
+                <div class="clue-grid" id="g1-clues"></div>
+                
+                <div class="char-bank">
+                    <div class="char-bank-title">👇 請把這裡的人物拉到上面的框框裡 👇</div>
+                    <div class="char-list" id="g1-chars"></div>
+                </div>
+            </div>
+
+            <div class="win-message" id="g1-win">
+                🎉 太棒了！你找出了所有聖經人物！ 🎉
+                <br>
+                <button class="restart-btn" onclick="initGame1()">再玩一次</button>
+            </div>
+        </div>
+
+        <!-- ================= 遊戲 2：金句填空 ================= -->
+        <div id="game2" class="tab-content">
+            <p class="g1-instruction">點擊正確的詞語，把神的話語填寫完整吧！</p>
+            
+            <div class="verse-list" id="g2-verses"></div>
+
+            <div class="win-message" id="g2-win">
+                🌟 好厲害！你學會了所有的金句！ 🌟
+                <br>
+                <button class="restart-btn" onclick="initGame2()">再玩一次</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ================= 頁籤切換邏輯 =================
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // ================= 遊戲 1 資料與邏輯 =================
+        const game1Data = [
+            { id: "c1", name: "大臣", emoji: "👨🏻", clue: "「求求你！我兒子生病了，請你醫治他。」" },
+            { id: "c2", name: "摩西姐姐", emoji: "👧🏻", clue: "「我要在河邊偷偷看顧著裝著弟弟的籃子。」" },
+            { id: "c3", name: "路得", emoji: "🌾", clue: "「為了婆婆，我每天都在田裡辛勤拾麥穗。」" },
+            { id: "c4", name: "百夫長", emoji: "💂🏻", clue: "「主啊，你只要說一句話，我的僕人就必好了！」" },
+            { id: "c5", name: "約拿單", emoji: "🤴🏻", clue: "「大衛是我最好的朋友，我把心愛的東西都送給他。」" },
+            { id: "c6", name: "寡婦", emoji: "🥣", clue: "「我用僅有的麵粉和油做餅給以利亞。」" },
+            { id: "c7", name: "四個朋友", emoji: "🤝", clue: "「我們把屋頂拆了，把癱子縋下去找耶穌！」" }
+        ];
+
+        let g1CorrectCount = 0;
+        let g1SelectedCharId = null; // 用於點擊模式
+
+        function initGame1() {
+            g1CorrectCount = 0;
+            g1SelectedCharId = null;
+            document.getElementById('g1-win').style.display = 'none';
+            
+            const cluesContainer = document.getElementById('g1-clues');
+            const charsContainer = document.getElementById('g1-chars');
+            cluesContainer.innerHTML = '';
+            charsContainer.innerHTML = '';
+
+            // 洗牌
+            const shuffledClues = [...game1Data].sort(() => 0.5 - Math.random());
+            const shuffledChars = [...game1Data].sort(() => 0.5 - Math.random());
+
+            // 建立題目區
+            shuffledClues.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'clue-card';
+                div.innerHTML = `
+                    <div class="clue-text">${item.clue}</div>
+                    <div class="drop-zone" data-target="${item.id}"></div>
+                `;
+                cluesContainer.appendChild(div);
+            });
+
+            // 建立人物區
+            shuffledChars.forEach(char => {
+                const div = document.createElement('div');
+                div.className = 'char-item';
+                div.draggable = true;
+                div.id = char.id;
+                div.innerHTML = `
+                    <div class="char-emoji">${char.emoji}</div>
+                    <div class="char-name">${char.name}</div>
+                `;
+                charsContainer.appendChild(div);
+            });
+
+            setupDragAndClickG1();
+        }
+
+        function setupDragAndClickG1() {
+            const chars = document.querySelectorAll('.char-item');
+            const zones = document.querySelectorAll('.drop-zone');
+
+            // --- 拖曳與點選事件設定 ---
+            chars.forEach(char => {
+                // 桌機拖曳
+                char.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', char.id);
+                    clearG1Selection();
+                });
+                
+                // 平板點擊選取
+                char.addEventListener('click', () => {
+                    clearG1Selection();
+                    char.classList.add('selected');
+                    g1SelectedCharId = char.id;
+                });
+            });
+
+            // --- 放置區事件設定 ---
+            zones.forEach(zone => {
+                zone.addEventListener('dragover', e => {
+                    e.preventDefault();
+                    zone.classList.add('drag-over');
+                });
+                zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+                
+                // 拖曳放置處理
+                zone.addEventListener('drop', e => {
+                    e.preventDefault();
+                    zone.classList.remove('drag-over');
+                    const draggedId = e.dataTransfer.getData('text/plain');
+                    handleG1Match(draggedId, zone);
+                });
+
+                // 平板點擊放置處理
+                zone.addEventListener('click', () => {
+                    if (g1SelectedCharId) {
+                        handleG1Match(g1SelectedCharId, zone);
+                    }
+                });
+            });
+        }
+
+        function clearG1Selection() {
+            document.querySelectorAll('.char-item').forEach(c => c.classList.remove('selected'));
+            g1SelectedCharId = null;
+        }
+
+        function handleG1Match(charId, zone) {
+            const targetId = zone.getAttribute('data-target');
+            const charElement = document.getElementById(charId);
+
+            if (!charElement) return;
+
+            // 答對了
+            if (charId === targetId && zone.innerHTML === '') {
+                zone.innerHTML = charElement.querySelector('.char-emoji').innerText;
+                zone.style.backgroundColor = '#d4edda';
+                zone.style.borderColor = 'var(--success)';
+                zone.style.cursor = 'default';
+                
+                charElement.classList.add('hidden'); // 隱藏已選項
+                clearG1Selection();
+                
+                g1CorrectCount++;
+                if (g1CorrectCount === game1Data.length) {
+                    document.getElementById('g1-win').style.display = 'block';
+                }
+            } 
+            // 答錯了
+            else if (zone.innerHTML === '') {
+                zone.classList.add('shake');
+                setTimeout(() => zone.classList.remove('shake'), 500);
+                clearG1Selection();
+            }
+        }
+
+        // ================= 遊戲 2 資料與邏輯 =================
+        const game2Data = [
+            { verse: "因為我們行事為人是憑着 {blank} ，不是憑着眼見。", ans: "信心", opts: ["信心", "愛心", "盼望", "熱心", "知識"] },
+            { verse: "愛弟兄，要 {blank} 。", ans: "相親相愛", opts: ["相親相愛", "彼此包容", "互相服侍", "彼此和睦", "互相忍耐"] },
+            { verse: "在白髮的人面前，你要站起來，要 {blank} 。", ans: "尊敬老人", opts: ["尊敬老人", "孝敬父母", "敬畏上帝", "禮貌待人", "聽從長輩"] },
+            { verse: "總要用愛心 {blank} 。", ans: "互相服侍", opts: ["互相服侍", "彼此相愛", "互相幫助", "彼此包容", "彼此順服"] },
+            { verse: "朋友時常 {blank} 。", ans: "親愛", opts: ["親愛", "相愛", "關心", "幫助", "聯絡"] },
+            { verse: "甘心施捨， {blank} 。", ans: "樂意分享", opts: ["樂意分享", "幫助窮人", "甘心奉獻", "歡樂讚美", "彼此相顧"] },
+            { verse: "各人不要單顧自己的事，也要顧 {blank} 。", ans: "別人的事", opts: ["別人的事", "家人的事", "朋友的事", "教會的事", "將來的事"] }
+        ];
+
+        let g2CorrectCount = 0;
+
+        function initGame2() {
+            g2CorrectCount = 0;
+            document.getElementById('g2-win').style.display = 'none';
+            const container = document.getElementById('g2-verses');
+            container.innerHTML = '';
+
+            game2Data.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'verse-card';
+                card.id = `vcard-${index}`;
+
+                // 處理句子裡的空格
+                const verseHTML = item.verse.replace('{blank}', `<span class="blank-space" id="blank-${index}">_______</span>`);
+                
+                // 洗牌選項
+                const shuffledOpts = [...item.opts].sort(() => 0.5 - Math.random());
+                
+                let optsHTML = '<div class="options-container">';
+                shuffledOpts.forEach(opt => {
+                    optsHTML += `<button class="option-btn" onclick="checkG2Answer('${opt}', '${item.ans}', ${index}, this)">${opt}</button>`;
+                });
+                optsHTML += '</div>';
+
+                card.innerHTML = `
+                    <div class="verse-text">${verseHTML}</div>
+                    ${optsHTML}
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function checkG2Answer(selected, correct, index, btnElement) {
+            const blankSpace = document.getElementById(`blank-${index}`);
+            const card = document.getElementById(`vcard-${index}`);
+            
+            // 答對了
+            if (selected === correct) {
+                blankSpace.innerText = correct;
+                blankSpace.classList.add('filled');
+                
+                // 鎖定該題的所有按鈕
+                const buttons = card.querySelectorAll('.option-btn');
+                buttons.forEach(b => {
+                    if(b === btnElement) {
+                        b.classList.add('correct');
+                    } else {
+                        b.classList.add('disabled');
+                    }
+                });
+
+                g2CorrectCount++;
+                if (g2CorrectCount === game2Data.length) {
+                    document.getElementById('g2-win').style.display = 'block';
+                }
+            } 
+            // 答錯了
+            else {
+                btnElement.classList.add('shake');
+                btnElement.style.backgroundColor = 'var(--danger)';
+                btnElement.style.color = 'white';
+                btnElement.style.borderColor = '#c0392b';
+                
+                setTimeout(() => {
+                    btnElement.classList.remove('shake');
+                    // 恢復原狀
+                    btnElement.style.backgroundColor = '';
+                    btnElement.style.color = '';
+                    btnElement.style.borderColor = '';
+                }, 500);
+            }
+        }
+
+        // ================= 頁面載入初始化 =================
+        window.onload = () => {
+            initGame1();
+            initGame2();
+        };
+    </script>
+</body>
+</html>
