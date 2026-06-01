@@ -71,6 +71,11 @@
     const speak = (text, rate = 0.85) => {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel(); 
+        
+        // 中斷可能正在進行的對話停頓計時器，避免聲音重疊
+        window.currentSpeakSession = Date.now();
+        if (window.dialogueTimeout) clearTimeout(window.dialogueTimeout);
+
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'zh-CN'; 
         utterance.rate = rate; 
@@ -132,6 +137,72 @@
         'an': '安', 'en': '恩', 'ang': '骯', 'eng': '鞥', 'ong': '嗡'
       };
       return pinyinMap[pinyinCode] || pinyinCode;
+    };
+
+    // 新增：專門用來生動朗讀對話的函數，會自動分配不同聲音、音調，並加入1秒停頓
+    const speakDialogue = (dialogueText) => {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel(); // 停止目前所有語音
+      
+      // 標記新的播放會話，避免使用者狂按導致聲音重疊混亂
+      const currentSession = Date.now();
+      window.currentSpeakSession = currentSession;
+      if (window.dialogueTimeout) clearTimeout(window.dialogueTimeout);
+
+      // 將對話按換行符號拆分成多句
+      const lines = dialogueText.split('\n').filter(line => line.trim() !== '');
+      
+      // 獲取系統中可用的中文語音庫
+      const voices = window.speechSynthesis.getVoices().filter(v => v.lang.includes('zh'));
+      
+      // 嘗試找尋不同的聲音（如果系統提供多種女聲/男聲）
+      const voice1 = voices.find(v => v.name.includes('Xiaoxiao') || v.name.includes('Ting-Ting')) || voices[0];
+      const voice2 = voices.find(v => v.name.includes('Yunxi') || v.name.includes('Yating') || (v !== voice1)) || voice1;
+
+      let currentLineIndex = 0;
+
+      const playNextLine = () => {
+        // 如果使用者點了其他題目/喇叭，這輪播放就會被中斷
+        if (currentLineIndex >= lines.length || window.currentSpeakSession !== currentSession) return;
+
+        const utterance = new SpeechSynthesisUtterance(lines[currentLineIndex]);
+        utterance.lang = 'zh-CN';
+        
+        // 利用交替順序 (index % 2) 來模擬兩人對話
+        if (currentLineIndex % 2 === 0) {
+          // 角色 A (小孩設定：聲音高一點)
+          utterance.voice = voice1;
+          utterance.pitch = 1.4; // 音高調高
+          utterance.rate = 0.6;  // 語速統一改為 0.6
+        } else {
+          // 角色 B (大人/回答者設定)
+          utterance.voice = voice2;
+          // 如果系統只有一種聲音，強制用 pitch 來製造反差感
+          utterance.pitch = (voice1 === voice2) ? 0.7 : 1.0; 
+          utterance.rate = 0.6;  // 語速統一改為 0.6
+        }
+
+        // 監聽句子唸完的事件，延遲 1 秒後再唸下一句
+        utterance.onend = () => {
+          currentLineIndex++;
+          if (currentLineIndex < lines.length && window.currentSpeakSession === currentSession) {
+            window.dialogueTimeout = setTimeout(playNextLine, 1000); // 1000毫秒 = 1秒停頓
+          }
+        };
+
+        // 防呆機制：若有錯誤也跳過繼續
+        utterance.onerror = () => {
+          currentLineIndex++;
+          if (currentLineIndex < lines.length && window.currentSpeakSession === currentSession) {
+            playNextLine();
+          }
+        };
+
+        window.speechSynthesis.speak(utterance);
+      };
+
+      // 開始播放第一句
+      playNextLine();
     };
 
     // --- Components ---
@@ -776,7 +847,7 @@
             <div className="bg-orange-50 rounded-3xl p-6 md:p-8 mb-6 shadow-inner text-left border-l-8 border-orange-300 relative">
               <div className="flex items-center gap-4 mb-4">
                 <button 
-                  onClick={() => speak(question.dialogue, 0.8)}
+                  onClick={() => speakDialogue(question.dialogue)}
                   className="bg-orange-200 hover:bg-orange-300 text-orange-700 p-4 rounded-full transition-transform transform hover:scale-110 active:scale-95"
                 >
                   <Volume2 size={32} />
@@ -791,7 +862,7 @@
             {/* 題目區域 */}
             <div className="bg-white border-4 border-orange-100 rounded-3xl p-6 mb-8 flex flex-col md:flex-row items-center gap-6">
               <button 
-                onClick={() => speak(question.q, 0.75)}
+                onClick={() => speak(question.q, 0.6)}
                 className="bg-orange-400 hover:bg-orange-500 text-white p-5 rounded-full shadow-md transform transition hover:scale-110 active:scale-95 flex-shrink-0"
               >
                 <Volume2 size={36} />
