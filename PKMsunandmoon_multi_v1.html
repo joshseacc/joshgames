@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math GO Battle League</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap');
+
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #FFB75E 0%, #ED8F03 50%, #2b5876 50%, #4e4376 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #game-container {
+            width: 95vw;
+            max-width: 500px;
+            height: 90vh;
+            max-height: 850px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Screens */
+        .screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        #start-screen, #game-over-screen { display: none; }
+        #player-select-screen { display: flex; }
+
+        h1 { color: #ff5e3a; font-size: 28px; margin-bottom: 10px; text-shadow: 2px 2px 0px #ffe100;}
+        h2 { color: #333; font-size: 20px; margin-bottom: 15px; }
+        
+        .desc-text { margin-bottom: 25px; color: #666; font-weight:bold; font-size: 14px; line-height: 1.5;}
+
+        /* Select Buttons */
+        .select-btn {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin: 10px 0;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 3px solid #ccc;
+            width: 80%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .select-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            border-color: #ffcc00;
+        }
+
+        .player-name { font-size: 22px; font-weight: 900; color: #d35400; margin-bottom: 5px;}
+        .player-desc { font-size: 13px; color: #666; font-weight: bold;}
+
+        .starter-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .starter-card {
+            background: white;
+            border-radius: 15px;
+            padding: 10px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 3px solid transparent;
+            width: 40%;
+            max-width: 100px;
+        }
+
+        .starter-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            border-color: #ffcc00;
+        }
+
+        .starter-card img { width: 70px; height: 70px; object-fit: contain; }
+        .starter-name { font-size: 13px; font-weight: bold; color: #555; margin-top: 5px; }
+
+        /* Battle Screen */
+        #battle-screen { flex: 1; position: relative; padding: 20px; display: none;}
+        
+        .pokemon-area {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        #enemy-area { top: 20px; right: 20px; }
+        #player-area { bottom: 20px; left: 20px; }
+
+        .pokemon-sprite {
+            width: 140px;
+            height: 140px;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.3));
+        }
+
+        /* Animations */
+        @keyframes float { 0% { transform: translateY(0); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0); } }
+        @keyframes attack-player { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(30px, -30px) scale(1.2); } 100% { transform: translate(0, 0) scale(1); } }
+        @keyframes attack-enemy { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-30px, 30px) scale(1.2); } 100% { transform: translate(0, 0) scale(1); } }
+        @keyframes damage { 0% { filter: brightness(1) sepia(0) hue-rotate(0) saturate(1); } 50% { filter: brightness(0.5) sepia(1) hue-rotate(-50deg) saturate(5); } 100% { filter: brightness(1) sepia(0) hue-rotate(0) saturate(1); } }
+        @keyframes evolve-glow {
+            0% { filter: brightness(1) drop-shadow(0 0 0px white); transform: scale(1); }
+            50% { filter: brightness(5) drop-shadow(0 0 30px #00bfff); transform: scale(1.2); }
+            100% { filter: brightness(1) drop-shadow(0 0 0px white); transform: scale(1); }
+        }
+
+        .floating { animation: float 3s ease-in-out infinite; }
+        .attacking-p { animation: attack-player 0.4s ease-out; }
+        .attacking-e { animation: attack-enemy 0.4s ease-out; }
+        .taking-damage { animation: damage 0.4s ease-in-out; }
+        .evolving { animation: evolve-glow 2.5s ease-in-out; }
+
+        /* HP Bar */
+        .hp-box {
+            background: rgba(255,255,255,0.9);
+            border-radius: 10px;
+            padding: 8px 12px;
+            border: 2px solid #333;
+            width: 160px;
+            margin-top: 10px;
+            box-shadow: 2px 2px 0px rgba(0,0,0,0.2);
+        }
+        
+        .hp-name { font-weight: 900; font-size: 14px; margin-bottom: 5px; color: #333;}
+        .hp-bar-bg { background: #444; border-radius: 5px; height: 10px; width: 100%; border: 1px solid #222; overflow: hidden;}
+        .hp-bar { background: #00ff00; height: 100%; width: 100%; transition: width 0.3s, background-color 0.3s; }
+
+        /* UI Screen */
+        #ui-screen {
+            background: white;
+            height: 45%;
+            border-top-left-radius: 30px;
+            border-top-right-radius: 30px;
+            padding: 20px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+        }
+
+        #timer-container { width: 100%; height: 8px; background: #eee; border-radius: 4px; margin-bottom: 15px; overflow: hidden; }
+        #timer-bar { height: 100%; width: 100%; background: #00bfff; transition: width 0.1s linear, background-color 0.3s; }
+
+        #question-box {
+            font-size: 42px;
+            font-weight: 900;
+            color: #333;
+            margin-bottom: 20px;
+            background: #f4f4f4;
+            padding: 10px 40px;
+            border-radius: 15px;
+            border: 2px dashed #ccc;
+        }
+
+        #options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+            flex: 1;
+        }
+
+        .opt-btn {
+            background: #ffcc00;
+            border: none;
+            border-radius: 15px;
+            font-size: 28px;
+            font-weight: 900;
+            color: #d35400;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #e67e22, 0 10px 10px rgba(0,0,0,0.1);
+            transition: all 0.1s;
+        }
+
+        .opt-btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 0px 0 #e67e22, 0 0px 0px rgba(0,0,0,0.1);
+        }
+
+        #message {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 26px;
+            font-weight: 900;
+            color: white;
+            text-shadow: 2px 2px 0px #000, -2px -2px 0px #000, 2px -2px 0px #000, -2px 2px 0px #000;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 20;
+            transition: opacity 0.2s;
+            text-align: center;
+        }
+        
+        .btn-restart {
+            margin-top: 20px;
+            padding: 10px 30px;
+            font-size: 20px;
+            background: #ff5e3a;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="message">Excellent!</div>
+
+    <!-- Select Player Screen -->
+    <div id="player-select-screen" class="screen">
+        <h1>GO Battle League</h1>
+        <h2>Select Trainer</h2>
+        <p class="desc-text">Choose your Trainer profile:</p>
+        
+        <div class="select-btn" onclick="selectPlayer('Chelsea')">
+            <div class="player-name">Chelsea 👧🏻</div>
+            <div class="player-desc">Advanced League (10s, covers 0-15)</div>
+        </div>
+        
+        <div class="select-btn" onclick="selectPlayer('Joshua')">
+            <div class="player-name">Joshua 👦🏻</div>
+            <div class="player-desc">Training League (+2s, covers 0-10)</div>
+        </div>
+    </div>
+
+    <!-- Select Starter Screen -->
+    <div id="start-screen" class="screen">
+        <h1>GO Battle League</h1>
+        <h2>Choose your Buddy</h2>
+        <p class="desc-text" id="greeting-text">
+            Choose your Buddy Pokémon!<br>
+            Defeat 3 opponents to evolve!
+        </p>
+        <div class="starter-container">
+            <div class="starter-card" onclick="startGame(722)">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/722.png" alt="Rowlet">
+                <div class="starter-name">Rowlet</div>
+            </div>
+            <div class="starter-card" onclick="startGame(725)">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/725.png" alt="Litten">
+                <div class="starter-name">Litten</div>
+            </div>
+            <div class="starter-card" onclick="startGame(728)">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/728.png" alt="Popplio">
+                <div class="starter-name">Popplio</div>
+            </div>
+            <div class="starter-card" onclick="startGame(789)">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/789.png" alt="Cosmog">
+                <div class="starter-name">Cosmog</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="game-over-screen" class="screen">
+        <h1 id="end-title">YOU WIN!</h1>
+        <h2 id="end-desc">You are a GO Battle Champion!</h2>
+        <button class="btn-restart" onclick="location.reload()">REMATCH</button>
+    </div>
+
+    <!-- Battle Screen -->
+    <div id="battle-screen">
+        <div id="enemy-area" class="pokemon-area">
+            <img id="enemy-img" class="pokemon-sprite floating" src="" alt="Opponent">
+            <div class="hp-box">
+                <div class="hp-name" id="enemy-name">Opponent</div>
+                <div class="hp-bar-bg"><div class="hp-bar" id="enemy-hp"></div></div>
+            </div>
+        </div>
+
+        <div id="player-area" class="pokemon-area">
+            <div class="hp-box">
+                <div class="hp-name" id="player-name">Buddy</div>
+                <div class="hp-bar-bg"><div class="hp-bar" id="player-hp"></div></div>
+            </div>
+            <img id="player-img" class="pokemon-sprite floating" src="" alt="Player">
+        </div>
+    </div>
+
+    <!-- UI Screen -->
+    <div id="ui-screen">
+        <div id="timer-container"><div id="timer-bar"></div></div>
+        <div id="question-box">? × ? =</div>
+        <div id="options-grid">
+            <button class="opt-btn" onclick="checkAnswer(0)"></button>
+            <button class="opt-btn" onclick="checkAnswer(1)"></button>
+            <button class="opt-btn" onclick="checkAnswer(2)"></button>
+            <button class="opt-btn" onclick="checkAnswer(3)"></button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentPlayer = 'Chelsea';
+    let timeDeductionRate = 1.0; 
+    let difficultyModifier = 0; 
+
+    // Player Pokemon Data
+    const starterData = {
+        722: [{id: 722, name: 'Rowlet'}, {id: 723, name: 'Dartrix'}, {id: 724, name: 'Decidueye'}],
+        725: [{id: 725, name: 'Litten'}, {id: 726, name: 'Torracat'}, {id: 727, name: 'Incineroar'}],
+        728: [{id: 728, name: 'Popplio'}, {id: 729, name: 'Brionne'}, {id: 730, name: 'Primarina'}],
+        789: [{id: 789, name: 'Cosmog'}, {id: 790, name: 'Cosmoem'}, {id: 791, name: 'Solgaleo'}]
+    };
+
+    // Enemy Villain Pokemon List (Team Skull, Aether, Ultra Beasts)
+    const enemies = [
+        { id: 41, name: "Zubat", maxHp: 100 },       
+        { id: 757, name: "Salandit", maxHp: 120 },   
+        { id: 747, name: "Mareanie", maxHp: 140 },   
+        { id: 88, name: "Grimer", maxHp: 160 },      
+        { id: 758, name: "Salazzle", maxHp: 180 },   
+        { id: 748, name: "Toxapex", maxHp: 200 },    
+        { id: 768, name: "Golisopod", maxHp: 230 },  
+        { id: 793, name: "Nihilego", maxHp: 260 },   
+        { id: 794, name: "Buzzwole", maxHp: 300 },   
+        { id: 800, name: "Necrozma", maxHp: 400 }    
+    ];
+
+    let currentStarterKey = 722;
+    let evoStage = 0; 
+    let currentEnemyIndex = 0;
+    
+    let playerMaxHp = 200;
+    let playerHp = playerMaxHp;
+    let enemyHp = 0;
+    
+    let currentCorrectAnswer = 0;
+    let timer;
+    let timeLeft = 100;
+    let isProcessing = false;
+
+    // DOM Elements
+    const screenPlayerSelect = document.getElementById('player-select-screen');
+    const screenStart = document.getElementById('start-screen');
+    const screenBattle = document.getElementById('battle-screen');
+    const screenUI = document.getElementById('ui-screen');
+    const screenEnd = document.getElementById('game-over-screen');
+    const greetingText = document.getElementById('greeting-text');
+    
+    const playerImg = document.getElementById('player-img');
+    const enemyImg = document.getElementById('enemy-img');
+    const playerNameDisplay = document.getElementById('player-name');
+    const enemyNameDisplay = document.getElementById('enemy-name');
+    const playerHpBar = document.getElementById('player-hp');
+    const enemyHpBar = document.getElementById('enemy-hp');
+    
+    const questionBox = document.getElementById('question-box');
+    const optionBtns = document.getElementsByClassName('opt-btn');
+    const timerBar = document.getElementById('timer-bar');
+    const msgBox = document.getElementById('message');
+
+    function selectPlayer(name) {
+        currentPlayer = name;
+        if (name === 'Joshua') {
+            timeDeductionRate = 100 / 120; // 12 seconds
+            difficultyModifier = 1; 
+            greetingText.innerHTML = `Trainer Joshua 👦🏻! Training League activated.<br>Choose your Buddy Pokémon!`;
+        } else {
+            timeDeductionRate = 1.0; // 10 seconds
+            difficultyModifier = 0;
+            greetingText.innerHTML = `Trainer Chelsea 👧🏻! Advanced League activated.<br>Choose your Buddy Pokémon!`;
+        }
+        
+        screenPlayerSelect.style.display = 'none';
+        screenStart.style.display = 'flex';
+    }
+
+    function startGame(starterId) {
+        currentStarterKey = starterId;
+        evoStage = 0;
+        playerMaxHp = 200;
+        playerHp = playerMaxHp;
+        currentEnemyIndex = 0;
+
+        updatePlayerSprite();
+        
+        screenStart.style.display = 'none';
+        screenBattle.style.display = 'block';
+        screenUI.style.display = 'flex';
+
+        loadEnemy();
+        updateHpUI();
+    }
+
+    function updatePlayerSprite() {
+        let data = starterData[currentStarterKey][evoStage];
+        playerImg.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${data.id}.png`;
+        playerNameDisplay.innerText = data.name;
+    }
+
+    function loadEnemy() {
+        if(currentEnemyIndex >= enemies.length) {
+            gameEnd(true);
+            return;
+        }
+        let enemy = enemies[currentEnemyIndex];
+        enemyHp = enemy.maxHp;
+        enemyNameDisplay.innerText = enemy.name;
+        enemyImg.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${enemy.id}.png`;
+        
+        showMessage(`A wild ${enemy.name} appeared!`, "#fff");
+        setTimeout(generateQuestion, 1500);
+    }
+
+    function generateQuestion() {
+        isProcessing = false;
+        timeLeft = 100;
+        timerBar.style.width = '100%';
+        timerBar.style.backgroundColor = '#00bfff';
+
+        let num1, num2;
+        
+        if (currentPlayer === 'Chelsea') {
+            if (currentEnemyIndex >= 7) { 
+                const pool = [0, 1, 12, 13, 14, 15];
+                num1 = pool[Math.floor(Math.random() * pool.length)];
+                num2 = Math.floor(Math.random() * 14) + 2; 
+            } else {
+                num1 = Math.floor(Math.random() * 11) + 2; 
+                num2 = Math.floor(Math.random() * 11) + 2; 
+            }
+        } else { // Joshua
+            if (currentEnemyIndex >= 7) {
+                num1 = Math.floor(Math.random() * 6) + 5; 
+                num2 = Math.floor(Math.random() * 11);    
+            } else if (currentEnemyIndex >= 3) {
+                num1 = Math.floor(Math.random() * 6) + 3; 
+                num2 = Math.floor(Math.random() * 11);    
+            } else {
+                num1 = Math.floor(Math.random() * 6);     
+                num2 = Math.floor(Math.random() * 11);    
+            }
+        }
+
+        if(Math.random() > 0.5) {
+            let temp = num1;
+            num1 = num2;
+            num2 = temp;
+        }
+
+        currentCorrectAnswer = num1 * num2;
+        questionBox.innerText = `${num1} × ${num2} = ?`;
+
+        let options = [currentCorrectAnswer];
+        while (options.length < 4) {
+            let w1, w2;
+            if (currentPlayer === 'Chelsea') {
+                if (currentEnemyIndex >= 7) {
+                    const pool = [0, 1, 12, 13, 14, 15];
+                    w1 = pool[Math.floor(Math.random() * pool.length)];
+                    w2 = Math.floor(Math.random() * 14) + 2; 
+                } else {
+                    w1 = Math.floor(Math.random() * 11) + 2;
+                    w2 = Math.floor(Math.random() * 11) + 2;
+                }
+            } else {
+                w1 = Math.floor(Math.random() * 11);
+                w2 = Math.floor(Math.random() * 11);
+            }
+            let wrong = w1 * w2;
+            if (!options.includes(wrong)) options.push(wrong);
+        }
+        
+        options.sort(() => Math.random() - 0.5);
+
+        for (let i = 0; i < 4; i++) {
+            optionBtns[i].innerText = options[i];
+            optionBtns[i].style.backgroundColor = "#ffcc00";
+            optionBtns[i].disabled = false;
+        }
+
+        clearInterval(timer);
+        timer = setInterval(() => {
+            timeLeft -= timeDeductionRate; 
+            timerBar.style.width = `${Math.max(timeLeft, 0)}%`;
+            
+            if(timeLeft < 50) timerBar.style.backgroundColor = '#ff9900';
+            if(timeLeft < 20) timerBar.style.backgroundColor = '#ff3300';
+
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                timeOutPunish();
+            }
+        }, 100);
+    }
+
+    function checkAnswer(index) {
+        if(isProcessing) return;
+        isProcessing = true;
+        clearInterval(timer);
+        
+        let selectedValue = parseInt(optionBtns[index].innerText);
+        
+        if (selectedValue === currentCorrectAnswer) {
+            optionBtns[index].style.backgroundColor = "#00ff00";
+            
+            let baseDamage = 30 + (evoStage * 10);
+            let damage = baseDamage;
+
+            if(timeLeft > 70) {
+                damage = baseDamage + 25;
+                showMessage("Excellent! It's super effective!", "#ffff00");
+            } else {
+                showMessage("Great!", "#fff");
+            }
+            
+            attackAnimation(true); 
+            setTimeout(() => {
+                enemyHp -= damage;
+                updateHpUI();
+                if(enemyHp <= 0) {
+                    handleEnemyDefeat();
+                } else {
+                    setTimeout(generateQuestion, 1000);
+                }
+            }, 400);
+
+        } else {
+            optionBtns[index].style.backgroundColor = "#ff3300";
+            showMessage("Not very effective... Incoming attack!", "#ff3300");
+            attackAnimation(false); 
+            
+            let dmgTaken = (currentPlayer === 'Joshua') ? 15 + (currentEnemyIndex * 2) : 20 + (currentEnemyIndex * 3);
+            
+            setTimeout(() => {
+                playerHp -= dmgTaken; 
+                updateHpUI();
+                if(playerHp <= 0) {
+                    gameEnd(false);
+                } else {
+                    setTimeout(generateQuestion, 1000);
+                }
+            }, 400);
+        }
+    }
+
+    function timeOutPunish() {
+        isProcessing = true;
+        showMessage("Time's up! Opponent used a Charged Attack!", "#ff3300");
+        for (let btn of optionBtns) btn.disabled = true;
+        
+        attackAnimation(false);
+        
+        let dmgTaken = (currentPlayer === 'Joshua') ? 20 + (currentEnemyIndex * 2) : 30 + (currentEnemyIndex * 3);
+        
+        setTimeout(() => {
+            playerHp -= dmgTaken;
+            updateHpUI();
+            if(playerHp <= 0) {
+                gameEnd(false);
+            } else {
+                setTimeout(generateQuestion, 1000);
+            }
+        }, 400);
+    }
+
+    function handleEnemyDefeat() {
+        showMessage(`Opponent's ${enemies[currentEnemyIndex].name} fainted!`, "#fff");
+        currentEnemyIndex++;
+        
+        if (currentEnemyIndex === 3 && evoStage === 0) {
+            setTimeout(() => triggerEvolution(1), 1500);
+        } else if (currentEnemyIndex === 6 && evoStage === 1) {
+            setTimeout(() => triggerEvolution(2), 1500);
+        } else {
+            setTimeout(loadEnemy, 1500);
+        }
+    }
+
+    function triggerEvolution(newStage) {
+        isProcessing = true;
+        evoStage = newStage;
+        let oldName = starterData[currentStarterKey][newStage-1].name;
+        let newName = starterData[currentStarterKey][newStage].name;
+        
+        showMessage(`Oh? ${oldName} is evolving!`, "#ffcc00");
+        playerImg.classList.add('evolving');
+        
+        setTimeout(() => {
+            updatePlayerSprite();
+            playerMaxHp += 100;
+            playerHp = playerMaxHp;
+            updateHpUI();
+            playerImg.classList.remove('evolving');
+            
+            showMessage(`Your Buddy evolved into ${newName}!`, "#00ff00");
+            
+            setTimeout(loadEnemy, 2500);
+        }, 1250); 
+    }
+
+    function attackAnimation(isPlayer) {
+        if(isPlayer) {
+            playerImg.classList.add('attacking-p');
+            setTimeout(() => {
+                playerImg.classList.remove('attacking-p');
+                enemyImg.classList.add('taking-damage');
+                setTimeout(() => enemyImg.classList.remove('taking-damage'), 400);
+            }, 200);
+        } else {
+            enemyImg.classList.add('attacking-e');
+            setTimeout(() => {
+                enemyImg.classList.remove('attacking-e');
+                playerImg.classList.add('taking-damage');
+                setTimeout(() => playerImg.classList.remove('taking-damage'), 400);
+            }, 200);
+        }
+    }
+
+    function updateHpUI() {
+        let pPercent = Math.max((playerHp / playerMaxHp) * 100, 0);
+        playerHpBar.style.width = `${pPercent}%`;
+        setHpColor(playerHpBar, pPercent);
+
+        if(currentEnemyIndex < enemies.length){
+            let eMax = enemies[currentEnemyIndex].maxHp;
+            let ePercent = Math.max((enemyHp / eMax) * 100, 0);
+            enemyHpBar.style.width = `${ePercent}%`;
+            setHpColor(enemyHpBar, ePercent);
+        }
+    }
+
+    function setHpColor(bar, percent) {
+        if(percent > 50) bar.style.backgroundColor = '#00ff00';
+        else if(percent > 20) bar.style.backgroundColor = '#ffcc00';
+        else bar.style.backgroundColor = '#ff3300';
+    }
+
+    function showMessage(text, color) {
+        msgBox.innerText = text;
+        msgBox.style.color = color;
+        msgBox.style.opacity = 1;
+        setTimeout(() => {
+            msgBox.style.opacity = 0;
+        }, 1500);
+    }
+
+    function gameEnd(isWin) {
+        clearInterval(timer);
+        screenBattle.style.display = 'none';
+        screenUI.style.display = 'none';
+        screenEnd.style.display = 'flex';
+        
+        const title = document.getElementById('end-title');
+        const desc = document.getElementById('end-desc');
+        
+        if(isWin) {
+            title.innerText = "YOU WIN! 🎉";
+            title.style.color = "#ffcc00";
+            desc.innerText = `Congratulations Trainer ${currentPlayer}! You are a GO Battle Champion!`;
+        } else {
+            title.innerText = "GOOD EFFORT 😭";
+            title.style.color = "#ff3300";
+            desc.innerText = "Your Buddy fainted... Power up and try again!";
+        }
+    }
+</script>
+</body>
+</html>
