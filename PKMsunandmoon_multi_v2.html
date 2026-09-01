@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math GO Battle League</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap');
+
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #FFB75E 0%, #ED8F03 50%, #2b5876 50%, #4e4376 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #game-container {
+            width: 95vw;
+            max-width: 500px;
+            height: 95vh;
+            max-height: 850px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Screens */
+        .screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        #start-screen { display: flex; }
+        #game-over-screen { display: none; }
+
+        h1 { color: #ff5e3a; font-size: 28px; margin-bottom: 10px; text-shadow: 2px 2px 0px #ffe100;}
+        h2 { color: #333; font-size: 20px; margin-bottom: 15px; }
+        
+        .desc-text { margin-bottom: 25px; color: #666; font-weight:bold; font-size: 14px; line-height: 1.5;}
+
+        .starter-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .starter-card {
+            background: white;
+            border-radius: 15px;
+            padding: 10px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 3px solid transparent;
+            width: 45%;
+            max-width: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .starter-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            border-color: #ffcc00;
+        }
+
+        .starter-card img { width: 70px; height: 70px; object-fit: contain; }
+        .starter-name { font-size: 14px; font-weight: 900; color: #333; margin-top: 5px; }
+        .starter-table { font-size: 12px; font-weight: bold; color: #d35400; margin-top: 2px; }
+
+        /* Battle Screen */
+        #battle-screen { flex: 1; position: relative; padding: 20px; display: none;}
+        
+        .pokemon-area {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        #enemy-area { top: 20px; right: 20px; }
+        #player-area { bottom: 20px; left: 20px; }
+
+        .pokemon-sprite {
+            width: 130px;
+            height: 130px;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.3));
+        }
+
+        /* Animations */
+        @keyframes float { 0% { transform: translateY(0); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0); } }
+        @keyframes attack-player { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(30px, -30px) scale(1.2); } 100% { transform: translate(0, 0) scale(1); } }
+        @keyframes attack-enemy { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-30px, 30px) scale(1.2); } 100% { transform: translate(0, 0) scale(1); } }
+        @keyframes damage { 0% { filter: brightness(1) sepia(0) hue-rotate(0) saturate(1); } 50% { filter: brightness(0.5) sepia(1) hue-rotate(-50deg) saturate(5); } 100% { filter: brightness(1) sepia(0) hue-rotate(0) saturate(1); } }
+        @keyframes evolve-glow {
+            0% { filter: brightness(1) drop-shadow(0 0 0px white); transform: scale(1); }
+            50% { filter: brightness(5) drop-shadow(0 0 30px #00bfff); transform: scale(1.2); }
+            100% { filter: brightness(1) drop-shadow(0 0 0px white); transform: scale(1); }
+        }
+
+        .floating { animation: float 3s ease-in-out infinite; }
+        .attacking-p { animation: attack-player 0.4s ease-out; }
+        .attacking-e { animation: attack-enemy 0.4s ease-out; }
+        .taking-damage { animation: damage 0.4s ease-in-out; }
+        .evolving { animation: evolve-glow 2.5s ease-in-out; }
+
+        /* HP Bar */
+        .hp-box {
+            background: rgba(255,255,255,0.9);
+            border-radius: 10px;
+            padding: 8px 12px;
+            border: 2px solid #333;
+            width: 150px;
+            margin-top: 10px;
+            box-shadow: 2px 2px 0px rgba(0,0,0,0.2);
+        }
+        
+        .hp-name { font-weight: 900; font-size: 14px; margin-bottom: 5px; color: #333;}
+        .hp-bar-bg { background: #444; border-radius: 5px; height: 10px; width: 100%; border: 1px solid #222; overflow: hidden;}
+        .hp-bar { background: #00ff00; height: 100%; width: 100%; transition: width 0.3s, background-color 0.3s; }
+
+        /* UI Screen (Dual Keypad) */
+        #ui-screen {
+            background: white;
+            height: 52%;
+            border-top-left-radius: 30px;
+            border-top-right-radius: 30px;
+            padding: 15px 20px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+        }
+
+        #timer-container { width: 100%; height: 8px; background: #eee; border-radius: 4px; margin-bottom: 10px; overflow: hidden; }
+        #timer-bar { height: 100%; width: 100%; background: #00bfff; transition: width 0.1s linear, background-color 0.3s; }
+
+        #question-box {
+            font-size: 36px;
+            font-weight: 900;
+            color: #333;
+            margin-bottom: 15px;
+            background: #f4f4f4;
+            padding: 10px 20px;
+            border-radius: 15px;
+            border: 2px dashed #ccc;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .digit-box {
+            display: inline-block;
+            width: 35px;
+            height: 45px;
+            line-height: 45px;
+            text-align: center;
+            border-bottom: 4px solid #aaa;
+            color: #d35400;
+            font-size: 38px;
+        }
+
+        /* Dual Keypad Layout */
+        .keypads-container {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            gap: 20px;
+            flex: 1;
+        }
+
+        .keypad {
+            display: flex;
+            flex-direction: column;
+            width: 45%;
+        }
+
+        .keypad-title {
+            font-size: 16px;
+            font-weight: 900;
+            color: #555;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .numpad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+
+        .num-btn {
+            background: #f0f0f0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 12px 0;
+            cursor: pointer;
+            color: #333;
+            transition: all 0.1s;
+        }
+
+        .num-btn:active { transform: scale(0.95); }
+        .num-btn.selected { background: #ffcc00; border-color: #d35400; color: #d35400; }
+        .num-btn-0 { grid-column: 2; }
+
+        /* Attack Button */
+        #attack-btn {
+            width: 100%;
+            background: #ff5e3a;
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 24px;
+            font-weight: 900;
+            padding: 12px;
+            margin-top: 15px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #d35400;
+            transition: all 0.1s;
+        }
+
+        #attack-btn:active:not(:disabled) { transform: translateY(6px); box-shadow: 0 0px 0 #d35400; }
+        #attack-btn:disabled { background: #ccc; box-shadow: 0 6px 0 #aaa; color: #888; cursor: not-allowed; }
+
+        #message {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 26px;
+            font-weight: 900;
+            color: white;
+            text-shadow: 2px 2px 0px #000, -2px -2px 0px #000, 2px -2px 0px #000, -2px 2px 0px #000;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 20;
+            transition: opacity 0.2s;
+            text-align: center;
+        }
+        
+        .btn-restart {
+            margin-top: 20px;
+            padding: 10px 30px;
+            font-size: 20px;
+            background: #ff5e3a;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="message">Excellent!</div>
+
+    <!-- Select Starter Screen -->
+    <div id="start-screen" class="screen">
+        <h1>GO Battle League</h1>
+        <h2>Choose your Buddy</h2>
+        <p class="desc-text" id="greeting-text">
+            Choose your Partner Pokémon!<br>
+            Defeat 3 opponents to evolve!
+        </p>
+        <div class="starter-container">
+            <div class="starter-card" onclick="startGame(722)">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/722.png" alt="Rowlet">
+                <div class="starter-name">Rowlet</div>
+                <div class="starter-table">7x Table</div>
+            </div>
+            <div class="starter-card" onclick="startGame(728)">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/728.png" alt="Popplio">
+                <div class="starter-name">Popplio</div>
+                <div class="starter-table">8x Table</div>
+            </div>
+            <div class="starter-card" onclick="startGame(725)">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/725.png" alt="Litten">
+                <div class="starter-name">Litten</div>
+                <div class="starter-table">9x Table</div>
+            </div>
+            <div class="starter-card" onclick="startGame(789)">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/789.png" alt="Cosmog">
+                <div class="starter-name">Cosmog</div>
+                <div class="starter-table">7, 8, 9 Mixed</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="game-over-screen" class="screen">
+        <h1 id="end-title">YOU WIN!</h1>
+        <h2 id="end-desc">You are a GO Battle Champion!</h2>
+        <button class="btn-restart" onclick="location.reload()">REMATCH</button>
+    </div>
+
+    <!-- Battle Screen -->
+    <div id="battle-screen">
+        <div id="enemy-area" class="pokemon-area">
+            <img id="enemy-img" class="pokemon-sprite floating" src="" alt="Opponent">
+            <div class="hp-box">
+                <div class="hp-name" id="enemy-name">Opponent</div>
+                <div class="hp-bar-bg"><div class="hp-bar" id="enemy-hp"></div></div>
+            </div>
+        </div>
+
+        <div id="player-area" class="pokemon-area">
+            <div class="hp-box">
+                <div class="hp-name" id="player-name">Buddy</div>
+                <div class="hp-bar-bg"><div class="hp-bar" id="player-hp"></div></div>
+            </div>
+            <img id="player-img" class="pokemon-sprite floating" src="" alt="Player">
+        </div>
+    </div>
+
+    <!-- UI Screen (Dual Keypad) -->
+    <div id="ui-screen">
+        <div id="timer-container"><div id="timer-bar"></div></div>
+        
+        <div id="question-box">
+            <span id="q-text">? × ? = </span>
+            <div id="ans-display">
+                <span id="disp-tens" class="digit-box"></span>
+                <span id="disp-units" class="digit-box"></span>
+            </div>
+        </div>
+        
+        <div class="keypads-container">
+            <!-- Left Keypad (Tens) -->
+            <div class="keypad">
+                <div class="keypad-title">Tens</div>
+                <div class="numpad" id="numpad-tens">
+                    <button class="num-btn" id="btn-tens-1" onclick="selectDigit('tens', 1)">1</button>
+                    <button class="num-btn" id="btn-tens-2" onclick="selectDigit('tens', 2)">2</button>
+                    <button class="num-btn" id="btn-tens-3" onclick="selectDigit('tens', 3)">3</button>
+                    <button class="num-btn" id="btn-tens-4" onclick="selectDigit('tens', 4)">4</button>
+                    <button class="num-btn" id="btn-tens-5" onclick="selectDigit('tens', 5)">5</button>
+                    <button class="num-btn" id="btn-tens-6" onclick="selectDigit('tens', 6)">6</button>
+                    <button class="num-btn" id="btn-tens-7" onclick="selectDigit('tens', 7)">7</button>
+                    <button class="num-btn" id="btn-tens-8" onclick="selectDigit('tens', 8)">8</button>
+                    <button class="num-btn" id="btn-tens-9" onclick="selectDigit('tens', 9)">9</button>
+                    <button class="num-btn num-btn-0" id="btn-tens-0" onclick="selectDigit('tens', 0)">0</button>
+                </div>
+            </div>
+            
+            <!-- Right Keypad (Units) -->
+            <div class="keypad">
+                <div class="keypad-title">Units</div>
+                <div class="numpad" id="numpad-units">
+                    <button class="num-btn" id="btn-units-1" onclick="selectDigit('units', 1)">1</button>
+                    <button class="num-btn" id="btn-units-2" onclick="selectDigit('units', 2)">2</button>
+                    <button class="num-btn" id="btn-units-3" onclick="selectDigit('units', 3)">3</button>
+                    <button class="num-btn" id="btn-units-4" onclick="selectDigit('units', 4)">4</button>
+                    <button class="num-btn" id="btn-units-5" onclick="selectDigit('units', 5)">5</button>
+                    <button class="num-btn" id="btn-units-6" onclick="selectDigit('units', 6)">6</button>
+                    <button class="num-btn" id="btn-units-7" onclick="selectDigit('units', 7)">7</button>
+                    <button class="num-btn" id="btn-units-8" onclick="selectDigit('units', 8)">8</button>
+                    <button class="num-btn" id="btn-units-9" onclick="selectDigit('units', 9)">9</button>
+                    <button class="num-btn num-btn-0" id="btn-units-0" onclick="selectDigit('units', 0)">0</button>
+                </div>
+            </div>
+        </div>
+
+        <button id="attack-btn" onclick="submitAnswer()" disabled>ATTACK!</button>
+    </div>
+</div>
+
+<script>
+    let timeDeductionRate = 1.0; // 10 seconds fixed
+    let currentTableType = 7;
+
+    const starterData = {
+        722: [{id: 722, name: 'Rowlet'}, {id: 723, name: 'Dartrix'}, {id: 724, name: 'Decidueye'}],
+        725: [{id: 725, name: 'Litten'}, {id: 726, name: 'Torracat'}, {id: 727, name: 'Incineroar'}],
+        728: [{id: 728, name: 'Popplio'}, {id: 729, name: 'Brionne'}, {id: 730, name: 'Primarina'}],
+        789: [{id: 789, name: 'Cosmog'}, {id: 790, name: 'Cosmoem'}, {id: 791, name: 'Solgaleo'}]
+    };
+
+    const enemies = [
+        { id: 41, name: "Zubat", maxHp: 100 },       
+        { id: 757, name: "Salandit", maxHp: 120 },   
+        { id: 747, name: "Mareanie", maxHp: 140 },   
+        { id: 88, name: "Grimer", maxHp: 160 },      
+        { id: 758, name: "Salazzle", maxHp: 180 },   
+        { id: 748, name: "Toxapex", maxHp: 200 },    
+        { id: 768, name: "Golisopod", maxHp: 230 },  
+        { id: 793, name: "Nihilego", maxHp: 260 },   
+        { id: 794, name: "Buzzwole", maxHp: 300 },   
+        { id: 800, name: "Necrozma", maxHp: 400 }    
+    ];
+
+    let currentStarterKey = 722;
+    let evoStage = 0; 
+    let currentEnemyIndex = 0;
+    
+    let playerMaxHp = 200;
+    let playerHp = playerMaxHp;
+    let enemyHp = 0;
+    
+    let currentCorrectAnswer = 0;
+    let timer;
+    let timeLeft = 100;
+    let isProcessing = false;
+    
+    // Numpad input tracking
+    let selectedTens = null;
+    let selectedUnits = null;
+
+    const screenStart = document.getElementById('start-screen');
+    const screenBattle = document.getElementById('battle-screen');
+    const screenUI = document.getElementById('ui-screen');
+    const screenEnd = document.getElementById('game-over-screen');
+    
+    const playerImg = document.getElementById('player-img');
+    const enemyImg = document.getElementById('enemy-img');
+    const playerNameDisplay = document.getElementById('player-name');
+    const enemyNameDisplay = document.getElementById('enemy-name');
+    const playerHpBar = document.getElementById('player-hp');
+    const enemyHpBar = document.getElementById('enemy-hp');
+    
+    const qText = document.getElementById('q-text');
+    const dispTens = document.getElementById('disp-tens');
+    const dispUnits = document.getElementById('disp-units');
+    const timerBar = document.getElementById('timer-bar');
+    const msgBox = document.getElementById('message');
+    const attackBtn = document.getElementById('attack-btn');
+
+    function startGame(starterId) {
+        currentStarterKey = starterId;
+        evoStage = 0;
+        playerMaxHp = 200;
+        playerHp = playerMaxHp;
+        currentEnemyIndex = 0;
+        
+        if (starterId === 722) currentTableType = 7;
+        else if (starterId === 728) currentTableType = 8;
+        else if (starterId === 725) currentTableType = 9;
+        else if (starterId === 789) currentTableType = 'mixed';
+
+        updatePlayerSprite();
+        
+        screenStart.style.display = 'none';
+        screenBattle.style.display = 'block';
+        screenUI.style.display = 'flex';
+
+        loadEnemy();
+        updateHpUI();
+    }
+
+    function updatePlayerSprite() {
+        let data = starterData[currentStarterKey][evoStage];
+        playerImg.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${data.id}.png`;
+        playerNameDisplay.innerText = data.name;
+    }
+
+    function loadEnemy() {
+        if(currentEnemyIndex >= enemies.length) {
+            gameEnd(true);
+            return;
+        }
+        let enemy = enemies[currentEnemyIndex];
+        enemyHp = enemy.maxHp;
+        enemyNameDisplay.innerText = enemy.name;
+        enemyImg.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${enemy.id}.png`;
+        
+        showMessage(`A wild ${enemy.name} appeared!`, "#fff");
+        setTimeout(generateQuestion, 1500);
+    }
+
+    function resetInputs() {
+        selectedTens = null;
+        selectedUnits = null;
+        dispTens.innerText = "";
+        dispUnits.innerText = "";
+        dispTens.style.color = "#d35400";
+        dispUnits.style.color = "#d35400";
+        
+        document.querySelectorAll('.num-btn').forEach(btn => btn.classList.remove('selected'));
+        attackBtn.disabled = true;
+    }
+
+    function selectDigit(side, val) {
+        if (isProcessing) return;
+        
+        if (side === 'tens') {
+            selectedTens = val;
+            dispTens.innerText = val;
+            document.querySelectorAll('#numpad-tens .num-btn').forEach(b => b.classList.remove('selected'));
+            document.getElementById(`btn-tens-${val}`).classList.add('selected');
+        } else {
+            selectedUnits = val;
+            dispUnits.innerText = val;
+            document.querySelectorAll('#numpad-units .num-btn').forEach(b => b.classList.remove('selected'));
+            document.getElementById(`btn-units-${val}`).classList.add('selected');
+        }
+
+        // Enable attack button only if both digits are selected
+        if (selectedTens !== null && selectedUnits !== null) {
+            attackBtn.disabled = false;
+        }
+    }
+
+    function generateQuestion() {
+        isProcessing = false;
+        timeLeft = 100;
+        timerBar.style.width = '100%';
+        timerBar.style.backgroundColor = '#00bfff';
+        
+        resetInputs();
+
+        let num1, num2;
+        if (currentTableType === 'mixed') {
+            num1 = Math.floor(Math.random() * 3) + 7; // 7, 8, or 9
+        } else {
+            num1 = currentTableType;
+        }
+        num2 = Math.floor(Math.random() * 11); // 0 to 10
+
+        // Randomly swap positions to avoid memorizing order
+        if(Math.random() > 0.5) {
+            let temp = num1;
+            num1 = num2;
+            num2 = temp;
+        }
+
+        currentCorrectAnswer = num1 * num2;
+        qText.innerText = `${num1} × ${num2} = `;
+
+        clearInterval(timer);
+        timer = setInterval(() => {
+            timeLeft -= timeDeductionRate; 
+            timerBar.style.width = `${Math.max(timeLeft, 0)}%`;
+            
+            if(timeLeft < 50) timerBar.style.backgroundColor = '#ff9900';
+            if(timeLeft < 20) timerBar.style.backgroundColor = '#ff3300';
+
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                timeOutPunish();
+            }
+        }, 100);
+    }
+
+    function showCorrectAnswer(isCorrect) {
+        let correctTens = Math.floor(currentCorrectAnswer / 10);
+        let correctUnits = currentCorrectAnswer % 10;
+        
+        dispTens.innerText = correctTens;
+        dispUnits.innerText = correctUnits;
+        
+        let color = isCorrect ? "#00ff00" : "#ff3300";
+        dispTens.style.color = color;
+        dispUnits.style.color = color;
+    }
+
+    function submitAnswer() {
+        if(isProcessing || selectedTens === null || selectedUnits === null) return;
+        isProcessing = true;
+        clearInterval(timer);
+        
+        attackBtn.disabled = true;
+        
+        let userAnswer = selectedTens * 10 + selectedUnits;
+        
+        if (userAnswer === currentCorrectAnswer) {
+            showCorrectAnswer(true);
+            
+            let baseDamage = 30 + (evoStage * 10);
+            let damage = baseDamage;
+
+            if(timeLeft > 70) {
+                damage = baseDamage + 25;
+                showMessage("Excellent! It's super effective!", "#ffff00");
+            } else {
+                showMessage("Great!", "#fff");
+            }
+            
+            attackAnimation(true); 
+            setTimeout(() => {
+                enemyHp -= damage;
+                updateHpUI();
+                if(enemyHp <= 0) {
+                    handleEnemyDefeat();
+                } else {
+                    setTimeout(generateQuestion, 1000);
+                }
+            }, 400);
+
+        } else {
+            showCorrectAnswer(false);
+            showMessage("Not very effective... Incoming attack!", "#ff3300");
+            attackAnimation(false); 
+            
+            let dmgTaken = 20 + (currentEnemyIndex * 3);
+            
+            setTimeout(() => {
+                playerHp -= dmgTaken; 
+                updateHpUI();
+                if(playerHp <= 0) {
+                    gameEnd(false);
+                } else {
+                    setTimeout(generateQuestion, 1000);
+                }
+            }, 400);
+        }
+    }
+
+    function timeOutPunish() {
+        isProcessing = true;
+        attackBtn.disabled = true;
+        showCorrectAnswer(false);
+        showMessage("Time's up! Opponent used a Charged Attack!", "#ff3300");
+        
+        attackAnimation(false);
+        
+        let dmgTaken = 30 + (currentEnemyIndex * 3);
+        
+        setTimeout(() => {
+            playerHp -= dmgTaken;
+            updateHpUI();
+            if(playerHp <= 0) {
+                gameEnd(false);
+            } else {
+                setTimeout(generateQuestion, 1000);
+            }
+        }, 400);
+    }
+
+    function handleEnemyDefeat() {
+        showMessage(`Opponent's ${enemies[currentEnemyIndex].name} fainted!`, "#fff");
+        currentEnemyIndex++;
+        
+        if (currentEnemyIndex === 3 && evoStage === 0) {
+            setTimeout(() => triggerEvolution(1), 1500);
+        } else if (currentEnemyIndex === 6 && evoStage === 1) {
+            setTimeout(() => triggerEvolution(2), 1500);
+        } else {
+            setTimeout(loadEnemy, 1500);
+        }
+    }
+
+    function triggerEvolution(newStage) {
+        isProcessing = true;
+        evoStage = newStage;
+        let oldName = starterData[currentStarterKey][newStage-1].name;
+        let newName = starterData[currentStarterKey][newStage].name;
+        
+        showMessage(`Oh? ${oldName} is evolving!`, "#ffcc00");
+        playerImg.classList.add('evolving');
+        
+        setTimeout(() => {
+            updatePlayerSprite();
+            playerMaxHp += 100;
+            playerHp = playerMaxHp;
+            updateHpUI();
+            playerImg.classList.remove('evolving');
+            
+            showMessage(`Your Buddy evolved into ${newName}!`, "#00ff00");
+            
+            setTimeout(loadEnemy, 2500);
+        }, 1250); 
+    }
+
+    function attackAnimation(isPlayer) {
+        if(isPlayer) {
+            playerImg.classList.add('attacking-p');
+            setTimeout(() => {
+                playerImg.classList.remove('attacking-p');
+                enemyImg.classList.add('taking-damage');
+                setTimeout(() => enemyImg.classList.remove('taking-damage'), 400);
+            }, 200);
+        } else {
+            enemyImg.classList.add('attacking-e');
+            setTimeout(() => {
+                enemyImg.classList.remove('attacking-e');
+                playerImg.classList.add('taking-damage');
+                setTimeout(() => playerImg.classList.remove('taking-damage'), 400);
+            }, 200);
+        }
+    }
+
+    function updateHpUI() {
+        let pPercent = Math.max((playerHp / playerMaxHp) * 100, 0);
+        playerHpBar.style.width = `${pPercent}%`;
+        setHpColor(playerHpBar, pPercent);
+
+        if(currentEnemyIndex < enemies.length){
+            let eMax = enemies[currentEnemyIndex].maxHp;
+            let ePercent = Math.max((enemyHp / eMax) * 100, 0);
+            enemyHpBar.style.width = `${ePercent}%`;
+            setHpColor(enemyHpBar, ePercent);
+        }
+    }
+
+    function setHpColor(bar, percent) {
+        if(percent > 50) bar.style.backgroundColor = '#00ff00';
+        else if(percent > 20) bar.style.backgroundColor = '#ffcc00';
+        else bar.style.backgroundColor = '#ff3300';
+    }
+
+    function showMessage(text, color) {
+        msgBox.innerText = text;
+        msgBox.style.color = color;
+        msgBox.style.opacity = 1;
+        setTimeout(() => {
+            msgBox.style.opacity = 0;
+        }, 1500);
+    }
+
+    function gameEnd(isWin) {
+        clearInterval(timer);
+        screenBattle.style.display = 'none';
+        screenUI.style.display = 'none';
+        screenEnd.style.display = 'flex';
+        
+        const title = document.getElementById('end-title');
+        const desc = document.getElementById('end-desc');
+        
+        if(isWin) {
+            title.innerText = "YOU WIN! 🎉";
+            title.style.color = "#ffcc00";
+            desc.innerText = `You saved Alola and became a GO Battle Champion!`;
+        } else {
+            title.innerText = "GOOD EFFORT 😭";
+            title.style.color = "#ff3300";
+            desc.innerText = "Your Buddy fainted... Power up and try again!";
+        }
+    }
+</script>
+</body>
+</html>
