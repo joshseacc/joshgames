@@ -408,7 +408,7 @@
     // Data Definition
     const POKEMON_SPRITE_URL = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/";
     
-    // 15 Legendaries for the 15 levels (5 conversion + 10 calculation)
+    // 25 Legendaries/Mythicals for the 25 levels (15 conversion + 10 calculation)
     const legendaries = [
         { id: 144, name: "Articuno" }, 
         { id: 145, name: "Zapdos" }, 
@@ -424,7 +424,17 @@
         { id: 381, name: "Latios" },
         { id: 382, name: "Kyogre" }, 
         { id: 383, name: "Groudon" }, 
-        { id: 386, name: "Deoxys" }
+        { id: 386, name: "Deoxys" },
+        { id: 151, name: "Mew" },
+        { id: 251, name: "Celebi" },
+        { id: 385, name: "Jirachi" },
+        { id: 377, name: "Regirock" },
+        { id: 378, name: "Regice" },
+        { id: 379, name: "Registeel" },
+        { id: 483, name: "Dialga" },
+        { id: 484, name: "Palkia" },
+        { id: 487, name: "Giratina" },
+        { id: 493, name: "Arceus" }
     ];
 
     const questionsData = {
@@ -437,6 +447,16 @@
                 { q: "408厘米", format: "double", a1: 4, a2: 8 },
                 { q: "5米 6厘米", format: "single", a1: 506 },
                 { q: "200厘米", format: "double", a1: 2, a2: 0 },
+                { q: "275厘米", format: "double", a1: 2, a2: 75 },
+                { q: "8米 50厘米", format: "single", a1: 850 },
+                { q: "605厘米", format: "double", a1: 6, a2: 5 },
+                { q: "9米 99厘米", format: "single", a1: 999 },
+                { q: "1000厘米", format: "double", a1: 10, a2: 0 },
+                { q: "120厘米", format: "double", a1: 1, a2: 20 },
+                { q: "7米 8厘米", format: "single", a1: 708 },
+                { q: "550厘米", format: "double", a1: 5, a2: 50 },
+                { q: "2米 1厘米", format: "single", a1: 201 },
+                { q: "800厘米", format: "double", a1: 8, a2: 0 },
                 { q: "2米 40厘米 + 1米 80厘米", format: "double", a1: 4, a2: 20 },
                 { q: "5米 10厘米 - 2米 50厘米", format: "double", a1: 2, a2: 60 },
                 { q: "3米 90厘米 + 4米 15厘米", format: "double", a1: 8, a2: 5 },
@@ -458,6 +478,16 @@
                 { q: "10角", format: "double", a1: 1, a2: 0 },
                 { q: "7元 3角", format: "single", a1: 73 },
                 { q: "56角", format: "double", a1: 5, a2: 6 },
+                { q: "38角", format: "double", a1: 3, a2: 8 },
+                { q: "9元 1角", format: "single", a1: 91 },
+                { q: "105角", format: "double", a1: 10, a2: 5 },
+                { q: "15元 0角", format: "single", a1: 150 },
+                { q: "80角", format: "double", a1: 8, a2: 0 },
+                { q: "42角", format: "double", a1: 4, a2: 2 },
+                { q: "6元 6角", format: "single", a1: 66 },
+                { q: "99角", format: "double", a1: 9, a2: 9 },
+                { q: "20元 5角", format: "single", a1: 205 },
+                { q: "120角", format: "double", a1: 12, a2: 0 },
                 { q: "13元 6角 + 5元 7角", format: "double", a1: 19, a2: 3 },
                 { q: "20元 2角 - 8元 5角", format: "double", a1: 11, a2: 7 },
                 { q: "9元 8角 + 12元 4角", format: "double", a1: 22, a2: 2 },
@@ -479,6 +509,16 @@
                 { q: "130分鐘", format: "double", a1: 2, a2: 10 },
                 { q: "1小時 50分鐘", format: "single", a1: 110 },
                 { q: "180分鐘", format: "double", a1: 3, a2: 0 },
+                { q: "75分鐘", format: "double", a1: 1, a2: 15 },
+                { q: "3小時 5分鐘", format: "single", a1: 185 },
+                { q: "200分鐘", format: "double", a1: 3, a2: 20 },
+                { q: "4小時 30分鐘", format: "single", a1: 270 },
+                { q: "120分鐘", format: "double", a1: 2, a2: 0 },
+                { q: "105分鐘", format: "double", a1: 1, a2: 45 },
+                { q: "1小時 20分鐘", format: "single", a1: 80 },
+                { q: "250分鐘", format: "double", a1: 4, a2: 10 },
+                { q: "5小時 10分鐘", format: "single", a1: 310 },
+                { q: "240分鐘", format: "double", a1: 4, a2: 0 },
                 { q: "2小時 40分鐘 + 1小時 35分鐘", format: "double", a1: 4, a2: 15 },
                 { q: "4小時 10分鐘 - 1小時 50分鐘", format: "double", a1: 2, a2: 20 },
                 { q: "3小時 45分鐘 + 2小時 20分鐘", format: "double", a1: 6, a2: 5 },
