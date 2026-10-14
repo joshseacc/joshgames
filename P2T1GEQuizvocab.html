@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P.2 English Vocabulary Checklist</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 50%, #fdf2f8 100%);
+            min-height: 100vh;
+            color: #334155;
+        }
+        
+        .check-container {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border-radius: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: white;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+        
+        .check-container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+            border-color: #e2e8f0;
+        }
+
+        .custom-checkbox {
+            appearance: none;
+            background-color: #f8fafc;
+            margin: 0 1rem 0 0;
+            font: inherit;
+            color: currentColor;
+            width: 1.75em;
+            height: 1.75em;
+            border: 2px solid #cbd5e1;
+            border-radius: 0.5em;
+            display: grid;
+            place-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            flex-shrink: 0;
+        }
+
+        .custom-checkbox::before {
+            content: "";
+            width: 0.9em;
+            height: 0.9em;
+            clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+            transform: scale(0);
+            transform-origin: bottom left;
+            transition: 120ms transform cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: inset 1em 1em white;
+            background-color: white;
+        }
+
+        .custom-checkbox:checked {
+            background-color: #6366f1; /* Indigo 500 */
+            border-color: #6366f1;
+            transform: scale(1.1);
+        }
+
+        .custom-checkbox:checked::before {
+            transform: scale(1);
+        }
+
+        .word-label {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #475569;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .custom-checkbox:checked + .word-label {
+            text-decoration: line-through;
+            text-decoration-thickness: 3px;
+            color: #cbd5e1;
+        }
+
+        /* Glassmorphism Cards */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+        }
+
+        @media print {
+            body { background: white; }
+            .no-print { display: none; }
+            .glass-card { 
+                box-shadow: none; 
+                border: 2px solid #e2e8f0; 
+                page-break-inside: avoid;
+            }
+            .page-break { page-break-before: always; }
+            .check-container { padding: 0.25rem; }
+        }
+    </style>
+</head>
+<body class="py-8 px-4 sm:px-8">
+
+    <div class="max-w-6xl mx-auto">
+        
+        <header class="text-center mb-12 no-print">
+            <div class="inline-block bg-white px-6 py-2 rounded-full shadow-sm text-indigo-500 font-bold tracking-widest text-sm mb-4 uppercase border border-indigo-100">
+                Extracted strictly from Supp WS 1-6
+            </div>
+            <h1 class="text-4xl md:text-5xl font-black text-slate-800 mb-4 tracking-tight">
+                P.2 <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-pink-500">Vocabulary</span> Master! 🚀
+            </h1>
+            <p class="text-lg text-slate-500 font-medium max-w-2xl mx-auto">
+                Tick the bubble once you know how to spell and read the word perfectly.
+            </p>
+            <button onclick="window.print()" class="mt-8 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-3 px-8 rounded-full shadow-lg shadow-indigo-200 transform hover:-translate-y-1 transition-all duration-200 flex items-center justify-center mx-auto gap-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                Print My Checklist
+            </button>
+        </header>
+
+        <div class="grid lg:grid-cols-2 gap-8 mb-10">
+            
+            <div class="glass-card rounded-3xl p-8 border-t-8 border-t-sky-400 relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-6 opacity-10 text-8xl">🎨</div>
+                <h2 class="text-3xl font-black text-sky-600 mb-6 flex items-center gap-3">
+                    <span class="bg-sky-100 text-sky-600 w-12 h-12 flex items-center justify-center rounded-2xl">1</span>
+                    Fun in Class (WS 1)
+                </h2>
+                
+                <h3 class="text-sm font-black text-sky-400 uppercase tracking-widest mb-4 mt-8 border-b-2 border-sky-100 pb-2">Classroom Activities</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">colouring</span></label>
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">counting</span></label>
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">cutting</span></label>
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">drawing</span></label>
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">gluing</span></label>
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">listening</span></label>
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">reading</span></label>
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">rubbing out</span></label>
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">writing</span></label>
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">talking</span></label>
+                </div>
+
+                <h3 class="text-sm font-black text-sky-400 uppercase tracking-widest mb-4 mt-8 border-b-2 border-sky-100 pb-2">Classroom Objects</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">a felt tip</span></label>
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">glue</span></label>
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">a notebook</span></label>
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">a paintbrush</span></label>
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">scissors</span></label>
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">a computer</span></label>
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">crayons</span></label>
+                </div>
+            </div>
+
+            <div class="glass-card rounded-3xl p-8 border-t-8 border-t-amber-400 relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-6 opacity-10 text-8xl">☔</div>
+                <h2 class="text-3xl font-black text-amber-500 mb-6 flex items-center gap-3">
+                    <span class="bg-amber-100 text-amber-600 w-12 h-12 flex items-center justify-center rounded-2xl">2</span>
+                    World of Weather (WS 5)
+                </h2>
+                
+                <h3 class="text-sm font-black text-amber-400 uppercase tracking-widest mb-4 mt-8 border-b-2 border-amber-100 pb-2">Weather</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">cloudy</span></label>
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">cold</span></label>
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">hot</span></label>
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">rainy</span></label>
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">snowy</span></label>
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">sunny</span></label>
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">windy</span></label>
+                </div>
+
+                <h3 class="text-sm font-black text-amber-400 uppercase tracking-widest mb-4 mt-8 border-b-2 border-amber-100 pb-2">Clothes</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">boots</span></label>
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">a coat</span></label>
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">jeans</span></label>
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">a jumper</span></label>
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">a raincoat</span></label>
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">shorts</span></label>
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">a swimming costume</span></label>
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">an umbrella</span></label>
+                    <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label">trainers</span></label>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="glass-card rounded-3xl p-8 border-t-8 border-t-purple-400 relative overflow-hidden mb-10 page-break">
+            <div class="absolute top-0 right-0 p-6 opacity-5 text-9xl">⏳</div>
+            <h2 class="text-3xl font-black text-purple-600 mb-6 flex items-center gap-3">
+                <span class="bg-purple-100 text-purple-600 w-12 h-12 flex items-center justify-center rounded-2xl">3</span>
+                Present Continuous Endings (-ing)
+            </h2>
+            <p class="text-purple-700/70 font-bold mb-4">From Worksheet 2 Grammar Tables</p>
+            
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-3">
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">do &rarr; doing</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">cut &rarr; cutting</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">chase &rarr; chasing</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">cry &rarr; crying</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">help &rarr; helping</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">jog &rarr; jogging</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">come &rarr; coming</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">play &rarr; playing</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">laugh &rarr; laughing</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">run &rarr; running</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">drive &rarr; driving</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">study &rarr; studying</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">listen &rarr; listening</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">sit &rarr; sitting</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">have &rarr; having</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">tidy &rarr; tidying</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">read &rarr; reading</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">swim &rarr; swimming</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">make &rarr; making</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">fly &rarr; flying</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">talk &rarr; talking</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">skip &rarr; skipping</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">write &rarr; writing</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">carry &rarr; carrying</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">work &rarr; working</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">drink &rarr; drinking</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">put &rarr; putting</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">bake &rarr; baking</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">dry &rarr; drying</span></label>
+            </div>
+        </div>
+
+        <div class="glass-card rounded-3xl p-8 border-t-8 border-t-rose-400 relative overflow-hidden mb-10 page-break">
+            <div class="absolute top-0 right-0 p-6 opacity-5 text-9xl">📝</div>
+            <h2 class="text-3xl font-black text-rose-600 mb-6 flex items-center gap-3">
+                <span class="bg-rose-100 text-rose-600 w-12 h-12 flex items-center justify-center rounded-2xl">4</span>
+                Present Tense Rules (He/She/It)
+            </h2>
+            <p class="text-rose-700/70 font-bold mb-4">From Worksheet 3 Grammar Tables</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white p-4 rounded-xl border border-rose-100">
+                    <h3 class="font-bold text-rose-500 mb-2 text-xl">+s Rule</h3>
+                    <div class="space-y-2">
+                        <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">say &rarr; says</span></label>
+                        <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">buy &rarr; buys</span></label>
+                        <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">enjoy &rarr; enjoys</span></label>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-4 rounded-xl border border-rose-100">
+                    <h3 class="font-bold text-rose-500 mb-2 text-xl">+es Rule</h3>
+                    <div class="space-y-2">
+                        <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">wash &rarr; washes</span></label>
+                        <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">watch &rarr; watches</span></label>
+                        <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">go &rarr; goes</span></label>
+                        <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">mix &rarr; mixes</span></label>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-4 rounded-xl border border-rose-100">
+                    <h3 class="font-bold text-rose-500 mb-2 text-xl">y &rarr; ies Rule</h3>
+                    <div class="space-y-2">
+                        <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">tidy &rarr; tidies</span></label>
+                        <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">fly &rarr; flies</span></label>
+                        <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-base">try &rarr; tries</span></label>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl border border-rose-100 flex items-center justify-center">
+                     <label class="check-container w-full h-full justify-center"><input type="checkbox" class="custom-checkbox"><span class="word-label text-2xl text-rose-600">have &rarr; has</span></label>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card rounded-3xl p-8 border-t-8 border-t-emerald-400 page-break relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-6 opacity-5 text-9xl">🏃‍♂️</div>
+            
+            <div class="text-center mb-10">
+                <h2 class="text-3xl md:text-4xl font-black text-emerald-600 mb-3 flex items-center justify-center gap-3">
+                     <span class="bg-emerald-100 text-emerald-600 w-12 h-12 flex items-center justify-center rounded-2xl text-2xl">5</span>
+                    48 Action Verbs (Term 1-3)
+                </h2>
+                <p class="text-emerald-700/70 font-bold text-lg">From Worksheet 3. Remember how to spell these!</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-3">
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">bounce &rarr; bounces &rarr; bouncing</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">brush &rarr; brushes &rarr; brushing</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">buy &rarr; buys &rarr; buying</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">catch &rarr; catches &rarr; catching</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">clean &rarr; cleans &rarr; cleaning</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">climb &rarr; climbs &rarr; climbing</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">colour &rarr; colours &rarr; colouring</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">cost &rarr; costs &rarr; costing</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">count &rarr; counts &rarr; counting</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">cry &rarr; cries &rarr; crying</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">cut &rarr; cuts &rarr; cutting</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">drink &rarr; drinks &rarr; drinking</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">drive &rarr; drives &rarr; driving</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">dry &rarr; dries &rarr; drying</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">enjoy &rarr; enjoys &rarr; enjoying</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">feed &rarr; feeds &rarr; feeding</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">find &rarr; finds &rarr; finding</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">fly &rarr; flies &rarr; flying</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">forget &rarr; forgets &rarr; forgetting</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">go &rarr; goes &rarr; going</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">grow &rarr; grows &rarr; growing</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">have &rarr; has &rarr; having</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">hang &rarr; hangs &rarr; hanging</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">hold &rarr; holds &rarr; holding</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">hop &rarr; hops &rarr; hopping</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">iron &rarr; irons &rarr; ironing</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">keep &rarr; keeps &rarr; keeping</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">laugh &rarr; laughs &rarr; laughing</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">lay &rarr; lays &rarr; laying</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">play &rarr; plays &rarr; playing</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">rain &rarr; rains &rarr; raining</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">ride &rarr; rides &rarr; riding</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">rub &rarr; rubs &rarr; rubbing</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">say &rarr; says &rarr; saying</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">sit &rarr; sits &rarr; sitting</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">skip &rarr; skips &rarr; skipping</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">smile &rarr; smiles &rarr; smiling</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">study &rarr; studies &rarr; studying</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">swim &rarr; swims &rarr; swimming</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">throw &rarr; throws &rarr; throwing</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">tidy &rarr; tidies &rarr; tidying</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">try &rarr; tries &rarr; trying</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">want &rarr; wants &rarr; wanting</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">walk &rarr; walks &rarr; walking</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">wash &rarr; washes &rarr; washing</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">watch &rarr; watches &rarr; watching</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">wear &rarr; wears &rarr; wearing</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">wipe &rarr; wipes &rarr; wiping</span></label>
+                <label class="check-container"><input type="checkbox" class="custom-checkbox"><span class="word-label text-sm">write &rarr; writes &rarr; writing</span></label>
+            </div>
+        </div>
+
+        <div class="glass-card rounded-3xl p-8 lg:p-12 border-t-8 border-t-indigo-400 relative overflow-hidden mb-10 page-break">
+            <div class="absolute top-0 right-0 p-6 opacity-5 text-9xl">✏️</div>
+            
+            <div class="text-center mb-10">
+                <h2 class="text-3xl md:text-4xl font-black text-indigo-600 mb-3 flex items-center justify-center gap-3">
+                     <span class="bg-indigo-100 text-indigo-600 w-12 h-12 flex items-center justify-center rounded-2xl text-2xl">6</span>
+                    Vocabulary Usage Exercises
+                </h2>
+                <p class="text-indigo-700/70 font-bold text-xl">From Supp WS 1 & 5. Read the paragraph and fill in the blanks!</p>
+            </div>
+            
+            <div class="mb-14">
+                <h3 class="text-2xl font-bold text-slate-700 mb-4 flex items-center gap-2">
+                    <span class="text-sky-500">Exercise A:</span> Fun in Class (WS 1)
+                </h3>
+                <p class="text-lg text-slate-500 font-bold mb-8 italic">Fill in the blanks with the correct form of the words given. The first letter of each word is given.</p>
+                <div class="bg-white/80 p-6 md:p-10 rounded-2xl border-2 border-sky-100 shadow-sm">
+                    <p class="text-2xl leading-[4rem] md:leading-[4.5rem] text-slate-800 font-medium">
+                        Look around our classroom now! Tim is using his (1) s<span class="inline-block border-b-4 border-slate-400 w-32 md:w-48 mx-2"></span> to trim the paper into small pieces. He is (2) c<span class="inline-block border-b-4 border-slate-400 w-32 md:w-48 mx-2"></span> now. Across the room, Anna is (3) c<span class="inline-block border-b-4 border-slate-400 w-32 md:w-48 mx-2"></span> at the moment. She is pointing to each star on the board and saying the numbers in order. Look! The students are paying attention with their ears while the teacher is telling a story. They are (4) l<span class="inline-block border-b-4 border-slate-400 w-32 md:w-48 mx-2"></span> now. Meanwhile, Toby is cleaning up his messy work on his (5) n<span class="inline-block border-b-4 border-slate-400 w-32 md:w-48 mx-2"></span> with an eraser. He is (6) r<span class="inline-block border-b-4 border-slate-400 w-32 md:w-48 mx-2"></span> it out. At the craft table, my friends and I are (7) g<span class="inline-block border-b-4 border-slate-400 w-32 md:w-48 mx-2"></span> our pictures together with sticky (8) g<span class="inline-block border-b-4 border-slate-400 w-32 md:w-48 mx-2"></span> .
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-8">
+                <h3 class="text-2xl font-bold text-slate-700 mb-4 flex items-center gap-2">
+                    <span class="text-amber-500">Exercise B:</span> World of Weather (WS 5)
+                </h3>
+                <p class="text-lg text-slate-500 font-bold mb-8 italic">Fill in each blank with the correct form of the words given. The first letter of each word is given.</p>
+                <div class="bg-white/80 p-6 md:p-10 rounded-2xl border-2 border-amber-100 shadow-sm">
+                    <p class="text-2xl leading-[4rem] md:leading-[4.5rem] text-slate-800 font-medium">
+                        The weather is (1) s<span class="inline-block border-b-4 border-slate-400 w-32 md:w-48 mx-2"></span> and bright today. Ben feels very warm because it is (2) h<span class="inline-block border-b-4 border-slate-400 w-32 md:w-48 mx-2"></span> outside. He puts on his favourite (3) s<span class="inline-block border-b-4 border-slate-400 w-32 md:w-48 mx-2"></span> to keep his legs cool. On his feet, he wears a pair of (4) t<span class="inline-block border-b-4 border-slate-400 w-32 md:w-48 mx-2"></span> so he can run fast on the grass. Suddenly, grey clouds cover the sky and big drops of water fall down. It becomes a (5) r<span class="inline-block border-b-4 border-slate-400 w-32 md:w-48 mx-2"></span> afternoon. "Quick! Put on your yellow (6) r<span class="inline-block border-b-4 border-slate-400 w-32 md:w-48 mx-2"></span> to keep your clothes dry!" shouts Mum. Mum opens her big (7) u<span class="inline-block border-b-4 border-slate-400 w-32 md:w-48 mx-2"></span> to protect Ben from the rain. Later, the rain stops, but the strong air blows the leaves off the trees. It is very (8) w<span class="inline-block border-b-4 border-slate-400 w-32 md:w-48 mx-2"></span> now. "It is getting chilly," says Ben. He puts on a warm wool (9) j<span class="inline-block border-b-4 border-slate-400 w-32 md:w-48 mx-2"></span> over his shirt.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</body>
+</html>
