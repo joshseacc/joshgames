@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Neon Knowledge Shooter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0a0a0a;
+            color: #fff;
+            font-family: 'Press Start 2P', cursive;
+            overflow: hidden;
+            touch-action: none; /* Prevent scrolling on mobile */
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #000000 100%);
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none; /* Let clicks pass through to canvas if needed */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hud {
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            text-shadow: 0 0 10px #0ff;
+        }
+
+        .hud-top {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+        }
+
+        @media (min-width: 768px) {
+            .hud-top {
+                font-size: 1.2rem;
+            }
+        }
+
+        .question-container {
+            text-align: center;
+            font-size: 1rem;
+            color: #f0f;
+            text-shadow: 0 0 10px #f0f;
+            min-height: 3rem;
+            padding: 0 1rem;
+            line-height: 1.5;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            pointer-events: auto;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .neon-text {
+            color: #fff;
+            text-shadow:
+                0 0 5px #fff,
+                0 0 10px #fff,
+                0 0 20px #0ff,
+                0 0 40px #0ff,
+                0 0 80px #0ff;
+        }
+
+        .neon-text-pink {
+            color: #fff;
+            text-shadow:
+                0 0 5px #fff,
+                0 0 10px #fff,
+                0 0 20px #f0f,
+                0 0 40px #f0f,
+                0 0 80px #f0f;
+        }
+
+        .neon-btn {
+            background: transparent;
+            color: #0ff;
+            border: 2px solid #0ff;
+            padding: 1rem 2rem;
+            font-family: inherit;
+            font-size: 1.2rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 0 10px #0ff, inset 0 0 10px #0ff;
+            transition: all 0.2s ease;
+            margin-top: 2rem;
+            border-radius: 8px;
+        }
+
+        .neon-btn:hover {
+            background: #0ff;
+            color: #000;
+            box-shadow: 0 0 20px #0ff, inset 0 0 20px #0ff;
+        }
+
+        .menu-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1rem;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        /* Mobile controls overlay */
+        .mobile-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 30%;
+            display: flex;
+            z-index: 15;
+            pointer-events: auto;
+        }
+        
+        .control-zone {
+            flex: 1;
+            height: 100%;
+            display: flex;
+            align-items: flex-end;
+            padding: 20px;
+            opacity: 0.3;
+        }
+
+        .control-zone:active {
+            opacity: 0.6;
+        }
+        
+        .zone-left { justify-content: flex-start; }
+        .zone-right { justify-content: flex-end; }
+        .zone-shoot { justify-content: center; flex: 1.5;}
+
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            background: rgba(255,255,255,0.1);
+        }
+
+        @media (min-width: 1024px) {
+            .mobile-controls { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <canvas id="gameCanvas"></canvas>
+    
+    <div class="ui-layer">
+        <div class="hud hidden" id="hud">
+            <div class="hud-top">
+                <div>SCORE: <span id="score-display">0</span></div>
+                <div>LEVEL: <span id="level-display">1</span></div>
+            </div>
+            <div class="question-container" id="question-display">
+                Question goes here?
+            </div>
+        </div>
+    </div>
+
+    <!-- Screens -->
+    <div class="overlay" id="screen-start">
+        <h1 class="text-4xl md:text-6xl mb-4 neon-text text-center leading-tight">NEON<br>KNOWLEDGE</h1>
+        <p class="mt-4 text-sm md:text-base text-gray-300 max-w-md">Shoot the correct answers. Avoid the wrong ones!<br><br>Controls:<br>Arrows or Touch to Move<br>Spacebar or Touch to Shoot</p>
+        <div class="menu-grid">
+            <button class="neon-btn mode-btn" data-mode="ch1">Chapter 1: Living Things</button>
+            <button class="neon-btn mode-btn" data-mode="ch2">Chapter 2: Observing Animals</button>
+            <button class="neon-btn mode-btn" data-mode="ch3">Chapter 3: Growing Plants</button>
+            <button class="neon-btn mode-btn" data-mode="ch4">Chapter 4: Environment</button>
+            <button class="neon-btn mode-btn" data-mode="mixed">Mixed Chapters</button>
+        </div>
+    </div>
+
+    <div class="overlay hidden" id="screen-gameover">
+        <h1 class="text-5xl neon-text-pink mb-4">GAME OVER</h1>
+        <p class="text-xl">Final Score: <span id="final-score-lose">0</span></p>
+        <button class="neon-btn" id="btn-restart-lose">BACK TO MENU</button>
+    </div>
+
+    <div class="overlay hidden" id="screen-win">
+        <h1 class="text-5xl neon-text mb-4">YOU WIN!</h1>
+        <p class="text-xl text-yellow-300 mb-4">Level Clear</p>
+        <p class="text-xl">Final Score: <span id="final-score-win">0</span></p>
+        <button class="neon-btn" id="btn-restart-win">BACK TO MENU</button>
+    </div>
+</div>
+
+<script>
+    // Game Data
+    const chaptersData = {
+        ch1: [
+            { q: 'Characteristics of living things?', c: ['Respond to stimuli', 'Grow', 'Reproduce'], i: ['Man-made', 'Lifeless'] },
+            { q: 'Which are non-living things?', c: ['Robot dog', 'Fossil', 'Signpost'], i: ['Seed', 'Panda'] }
+        ],
+        ch2: [
+            { q: 'Why do animals need energy?', c: ['Growth', 'Repair', 'Activity', 'Reproduction'], i: ['Rusting', 'Photosynthesis'] },
+            { q: 'How do animals protect themselves?', c: ['Run away', 'Hide', 'Camouflage', 'Fight back'], i: ['Wag tails', 'Sniff'] }
+        ],
+        ch3: [
+            { q: 'What are the basic needs of plants?', c: ['Sunlight', 'Air', 'Water'], i: ['Meat', 'Bleach'] },
+            { q: 'What is the function of a stem?', c: ['Support plant', 'Transport water', 'Transport nutrients'], i: ['Anchor plant', 'Make food'] }
+        ],
+        ch4: [
+            { q: 'Sources of household water pollution?', c: ['Bleach', 'Grease', 'Detergent'], i: ['Fallen leaves', 'Clear water'] },
+            { q: 'How to reduce pollution?', c: ['Public transport', 'Walk short distances', 'Recycle plastics'], i: ['Burn trees', 'Dump waste'] }
+        ]
+    };
+
+    let activeLevels = [];
+
+    // Canvas Setup
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+
+    function resize() {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // UI Elements
+    const hud = document.getElementById('hud');
+    const scoreDisplay = document.getElementById('score-display');
+    const levelDisplay = document.getElementById('level-display');
+    const questionDisplay = document.getElementById('question-display');
+    
+    const screenStart = document.getElementById('screen-start');
+    const screenGameover = document.getElementById('screen-gameover');
+    const screenWin = document.getElementById('screen-win');
+
+    // Game State
+    let state = 'START'; // START, PLAYING, WIN
+    let score = 0;
+    let currentLevel = 0;
+    let lastTime = 0;
+
+    // Entities
+    const player = {
+        x: 0,
+        y: 0,
+        width: 40,
+        height: 40,
+        speed: 700, // px per second (Increased from 400)
+        dx: 0,
+        color: '#0ff',
+        cooldown: 0
+    };
+
+    let bullets = [];
+    let targets = [];
+    let particles = [];
+    let correctRemaining = 0;
+
+    // Input Handling
+    const keys = {
+        ArrowLeft: false,
+        ArrowRight: false,
+        Space: false
+    };
+
+    window.addEventListener('keydown', (e) => {
+        if(e.code === 'ArrowLeft') keys.ArrowLeft = true;
+        if(e.code === 'ArrowRight') keys.ArrowRight = true;
+        if(e.code === 'Space') keys.Space = true;
+    });
+
+    window.addEventListener('keyup', (e) => {
+        if(e.code === 'ArrowLeft') keys.ArrowLeft = false;
+        if(e.code === 'ArrowRight') keys.ArrowRight = false;
+        if(e.code === 'Space') keys.Space = false;
+    });
+
+    // Mobile Input (Touch / Drag & Auto-fire)
+    let isTouching = false;
+    
+    canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if(state === 'PLAYING') {
+            isTouching = true;
+            player.x = e.touches[0].clientX - player.width / 2;
+        }
+    }, {passive: false});
+    
+    canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if(state === 'PLAYING' && isTouching) {
+            player.x = e.touches[0].clientX - player.width / 2;
+        }
+    }, {passive: false});
+    
+    canvas.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        isTouching = false;
+    }, {passive: false});
+    
+    canvas.addEventListener('touchcancel', (e) => {
+        e.preventDefault();
+        isTouching = false;
+    }, {passive: false});
+
+    // Game Functions
+    function initGame(mode) {
+        if(mode) {
+            if(mode === 'mixed') {
+                activeLevels = [
+                    ...chaptersData.ch1, 
+                    ...chaptersData.ch2, 
+                    ...chaptersData.ch3, 
+                    ...chaptersData.ch4
+                ].sort(() => Math.random() - 0.5); // Shuffle mixed
+            } else {
+                activeLevels = [...chaptersData[mode]];
+            }
+        }
+
+        score = 0;
+        currentLevel = 0;
+        startLevel(currentLevel);
+        
+        screenStart.classList.add('hidden');
+        screenGameover.classList.add('hidden');
+        screenWin.classList.add('hidden');
+        
+        hud.classList.remove('hidden');
+
+        player.x = width / 2 - player.width / 2;
+        player.y = height - player.height - 80; // 80px above bottom
+        bullets = [];
+        particles = [];
+        
+        state = 'PLAYING';
+        lastTime = performance.now();
+        requestAnimationFrame(gameLoop);
+    }
+
+    function startLevel(lvlIndex) {
+        const levelData = activeLevels[lvlIndex];
+        questionDisplay.textContent = levelData.q;
+        levelDisplay.textContent = lvlIndex + 1;
+        updateScore();
+        
+        targets = [];
+        correctRemaining = levelData.c.length;
+
+        const allAnswers = [];
+        levelData.c.forEach(txt => allAnswers.push({text: txt, correct: true}));
+        levelData.i.forEach(txt => allAnswers.push({text: txt, correct: false}));
+
+        // Shuffle
+        allAnswers.sort(() => Math.random() - 0.5);
+
+        // Calculate layout
+        const targetWidth = Math.min(300, width * 0.45); // Responsive width, slightly wider to fit new text
+        const targetHeight = 60;
+        
+        allAnswers.forEach((ans, index) => {
+            spawnTarget(ans.text, ans.correct, index, targetWidth, targetHeight, allAnswers.length);
+        });
+    }
+
+    function spawnTarget(text, isCorrect, index, tWidth, tHeight, total) {
+        // Distribute randomly but above screen to fall in
+        const x = Math.random() * (width - tWidth - 20) + 10; 
+        const y = -100 - (Math.random() * 400) - (index * 150); 
+        
+        targets.push({
+            x: x,
+            y: y,
+            width: tWidth,
+            height: tHeight,
+            text: text,
+            correct: isCorrect,
+            speed: 120 + (currentLevel * 40) + (Math.random() * 60), // Increased base and scaling speed
+            active: true
+        });
+    }
+
+    function updateScore() {
+        scoreDisplay.textContent = score;
+    }
+
+    function createExplosion(x, y, color) {
+        for(let i=0; i<15; i++) {
+            particles.push({
+                x: x,
+                y: y,
+                vx: (Math.random() - 0.5) * 200,
+                vy: (Math.random() - 0.5) * 200,
+                life: 1.0,
+                color: color
+            });
+        }
+    }
+
+    function checkLevelProgress() {
+        if(correctRemaining <= 0) {
+            currentLevel++;
+            if(currentLevel >= activeLevels.length) {
+                // WIN
+                state = 'WIN';
+                hud.classList.add('hidden');
+                screenWin.classList.remove('hidden');
+                document.getElementById('final-score-win').textContent = score;
+            } else {
+                // Next Level
+                bullets = [];
+                startLevel(currentLevel);
+            }
+        }
+    }
+
+    // Main Update
+    function update(dt) {
+        if(state !== 'PLAYING') return;
+
+        // Player movement
+        player.dx = 0;
+        if(keys.ArrowLeft) player.dx = -player.speed;
+        if(keys.ArrowRight) player.dx = player.speed;
+
+        player.x += player.dx * dt;
+
+        // Clamp player to screen
+        if(player.x < 0) player.x = 0;
+        if(player.x + player.width > width) player.x = width - player.width;
+        
+        // Ensure player stays near bottom even on resize
+        player.y = height - player.height - 40;
+
+        // Shooting (Spacebar or Touch Auto-fire)
+        if(player.cooldown > 0) player.cooldown -= dt;
+        if((keys.Space || isTouching) && player.cooldown <= 0) {
+            bullets.push({
+                x: player.x + player.width / 2 - 4,
+                y: player.y,
+                width: 8,
+                height: 20,
+                speed: -1000, // Increased from -600
+                active: true
+            });
+            player.cooldown = 0.20; // 5 shots per second (Increased from 4)
+        }
+
+        // Bullets update
+        bullets.forEach(b => {
+            if(b.active) {
+                b.y += b.speed * dt;
+                if(b.y < -50) b.active = false;
+            }
+        });
+
+        // Targets update
+        targets.forEach(t => {
+            if(t.active) {
+                t.y += t.speed * dt;
+                
+                // Reset if falls off screen
+                if(t.y > height + 50) {
+                    t.y = -100 - Math.random() * 200;
+                    t.x = Math.random() * (width - t.width - 20) + 10;
+                }
+            }
+        });
+
+        // Particles update
+        for (let i = particles.length - 1; i >= 0; i--) {
+            let p = particles[i];
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+            p.life -= dt * 1.5;
+            if(p.life <= 0) particles.splice(i, 1);
+        }
+
+        // Collision: Bullet vs Target
+        bullets.forEach(b => {
+            if(!b.active) return;
+            targets.forEach(t => {
+                if(!t.active || !b.active) return;
+
+                // Simple AABB Check
+                if(b.x < t.x + t.width &&
+                   b.x + b.width > t.x &&
+                   b.y < t.y + t.height &&
+                   b.height + b.y > t.y) {
+                    
+                    // Hit!
+                    b.active = false;
+                    
+                    if(t.correct) {
+                        score += 10;
+                        createExplosion(t.x + t.width/2, t.y + t.height/2, '#0f0');
+                        t.active = false; // permanent remove
+                        correctRemaining--;
+                    } else {
+                        score -= 5;
+                        createExplosion(t.x + t.width/2, t.y + t.height/2, '#f00');
+                        // Respawn wrong answer at top
+                        t.y = -100 - Math.random() * 200;
+                        t.x = Math.random() * (width - t.width - 20) + 10;
+                    }
+                    
+                    updateScore();
+                    checkLevelProgress();
+                }
+            });
+        });
+
+        // Cleanup inactive entities
+        bullets = bullets.filter(b => b.active);
+    }
+
+    // Main Draw
+    function draw() {
+        // Clear with slight trailing effect
+        ctx.fillStyle = 'rgba(10, 10, 10, 0.4)';
+        ctx.fillRect(0, 0, width, height);
+
+        if(state !== 'PLAYING') return;
+
+        // Draw Player (Spaceship triangle)
+        ctx.save();
+        ctx.translate(player.x + player.width/2, player.y + player.height/2);
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = player.color;
+        ctx.fillStyle = player.color;
+        ctx.beginPath();
+        ctx.moveTo(0, -player.height/2);
+        ctx.lineTo(player.width/2, player.height/2);
+        ctx.lineTo(-player.width/2, player.height/2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+
+        // Draw Bullets
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#ff0';
+        ctx.fillStyle = '#ff0';
+        bullets.forEach(b => {
+            ctx.fillRect(b.x, b.y, b.width, b.height);
+        });
+
+        // Draw Targets
+        targets.forEach(t => {
+            if(!t.active) return;
+            
+            // Block background
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#f0f';
+            ctx.fillStyle = 'rgba(255, 0, 255, 0.1)';
+            ctx.strokeStyle = '#f0f';
+            ctx.lineWidth = 2;
+            ctx.fillRect(t.x, t.y, t.width, t.height);
+            ctx.strokeRect(t.x, t.y, t.width, t.height);
+
+            // Text
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = '#fff';
+            
+            // Adjust font size based on text length and width
+            let fontSize = 12;
+            if(width > 768) fontSize = 14;
+            ctx.font = `${fontSize}px 'Press Start 2P', monospace`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            // Text wrapping simple logic (1 line or max 2 lines for short words)
+            // For simplicity, just squeeze or print centered
+            ctx.fillText(t.text, t.x + t.width/2, t.y + t.height/2, t.width - 10);
+        });
+
+        // Draw Particles
+        particles.forEach(p => {
+            ctx.globalAlpha = p.life;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = p.color;
+            ctx.fillStyle = p.color;
+            ctx.fillRect(p.x, p.y, 4, 4);
+            ctx.globalAlpha = 1.0;
+        });
+        
+        ctx.shadowBlur = 0; // reset
+    }
+
+    function gameLoop(timestamp) {
+        if(!lastTime) lastTime = timestamp;
+        const dt = (timestamp - lastTime) / 1000;
+        lastTime = timestamp;
+
+        update(dt);
+        draw();
+
+        if(state === 'PLAYING') {
+            requestAnimationFrame(gameLoop);
+        }
+    }
+
+    // Event Listeners for Buttons
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const mode = e.target.getAttribute('data-mode');
+            initGame(mode);
+        });
+    });
+    
+    function backToMenu() {
+        state = 'START';
+        screenGameover.classList.add('hidden');
+        screenWin.classList.add('hidden');
+        screenStart.classList.remove('hidden');
+    }
+
+    document.getElementById('btn-restart-lose').addEventListener('click', backToMenu);
+    document.getElementById('btn-restart-win').addEventListener('click', backToMenu);
+
+    // Initial draw
+    ctx.fillStyle = '#0a0a0a';
+    ctx.fillRect(0, 0, width, height);
+
+</script>
+</body>
+</html>
