@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>拼音快樂學 (P2T1)</title>
+  
+  <!-- 載入 Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- 載入 Babel 以便在瀏覽器中編譯 JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- 增加 Import Map 以強制統一 React 版本，防止 CDN 衝突 -->
+  <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.3.1",
+        "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
+        "lucide-react": "https://esm.sh/lucide-react@0.447.0?deps=react@18.3.1"
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Nunito', 'Quicksand', 'Noto Sans TC', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-emerald-50">
+  
+  <!-- React 應用程式的掛載點 -->
+  <div id="root"></div>
+
+  <!-- 使用 Babel 和 ES Modules 載入我們的 React 程式碼 -->
+  <script type="text/babel" data-type="module">
+    import React, { useState, useEffect, useMemo, useCallback } from 'react';
+    import { createRoot } from 'react-dom/client';
+    import { Volume2, Star, BookOpen, Gamepad2, Search, ArrowRight, Sparkles, CheckCircle2, XCircle, Headphones, ArrowLeft, HelpCircle } from 'lucide-react';
+
+    const vocabData = {
+      lesson1: [
+        { word: "九", pinyin: "jiǔ" }, { word: "鴨", pinyin: "yā" }, { word: "校車", pinyin: "xiào chē" }, { word: "住在", pinyin: "zhù zài" }, { word: "那裏", pinyin: "nà li" }, { word: "搬家", pinyin: "bān jiā" }, { word: "皮鞋", pinyin: "pí xié" }, { word: "夏季", pinyin: "xià jì" }, { word: "小球", pinyin: "xiǎo qiú" },
+        { word: "旺角", pinyin: "Wàng jiǎo" }, { word: "沙田", pinyin: "Shā tián" }, { word: "踢球", pinyin: "tī qiú" }, { word: "九個", pinyin: "jiǔ gè" }, { word: "蹦跳", pinyin: "bèng tiào" }, { word: "小鴨", pinyin: "xiǎo yā" }, { word: "遊戲", pinyin: "yóu xì" }, { word: "記錯", pinyin: "jì cuò" }
+      ],
+      lesson2: [
+        { word: "請", pinyin: "qǐng" }, { word: "歡迎", pinyin: "huān yíng" }, { word: "客氣", pinyin: "kè qi" }, { word: "客人", pinyin: "kè rén" }, { word: "倒茶", pinyin: "dào chá" }, { word: "冰箱", pinyin: "bīng xiāng" }, { word: "布丁", pinyin: "bù dīng" }, { word: "蛋糕", pinyin: "dàn gāo" }, { word: "果汁", pinyin: "guǒ zhī" },
+        { word: "見面", pinyin: "jiàn miàn" }, { word: "邊", pinyin: "biān" }, { word: "丁", pinyin: "dīng" }, { word: "熊", pinyin: "xióng" }, { word: "窮", pinyin: "qióng" }, { word: "箱", pinyin: "xiāng" }, { word: "羊", pinyin: "yáng" }, { word: "拼", pinyin: "pīn" }, { word: "面", pinyin: "miàn" }, { word: "進", pinyin: "jìn" }
+      ],
+      lesson3: [
+        { word: "餐", pinyin: "cān" }, { word: "風景", pinyin: "fēng jǐng" }, { word: "燒烤", pinyin: "shāo kǎo" }, { word: "風箏", pinyin: "fēng zheng" }, { word: "跳繩", pinyin: "tiào shéng" }, { word: "同意", pinyin: "tóng yì" }, { word: "贊成", pinyin: "zàn chéng" }, { word: "主意", pinyin: "zhǔ yi" },
+        { word: "游泳", pinyin: "yóu yǒng" }, { word: "郊野", pinyin: "jiāo yě" }, { word: "音樂", pinyin: "yīn yuè" }
+      ]
+    };
+
+    const allVocab = Object.values(vocabData).flat();
+
+    const speak = (text, rate = 0.85) => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel(); 
+        window.currentSpeakSession = Date.now();
+        if (window.dialogueTimeout) clearTimeout(window.dialogueTimeout);
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'zh-CN'; 
+        utterance.rate = rate; 
+        
+        const voices = window.speechSynthesis.getVoices();
+        const zhVoice = voices.find(v => v.lang.includes('zh') && (v.name.includes('Xiaoxiao') || v.name.includes('Ting-Ting') || v.name.includes('Yaoyao')));
+        if (zhVoice) {
+          utterance.voice = zhVoice;
+        }
+        window.speechSynthesis.speak(utterance);
+      }
+    };
+
+    const speakDialogue = (dialogueText) => {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel(); 
+      
+      const currentSession = Date.now();
+      window.currentSpeakSession = currentSession;
+      if (window.dialogueTimeout) clearTimeout(window.dialogueTimeout);
+
+      const lines = dialogueText.split('\n').filter(line => line.trim() !== '');
+      const voices = window.speechSynthesis.getVoices().filter(v => v.lang.includes('zh'));
+      const voice1 = voices.find(v => v.name.includes('Xiaoxiao') || v.name.includes('Ting-Ting')) || voices[0];
+      const voice2 = voices.find(v => v.name.includes('Yunxi') || v.name.includes('Yating') || (v !== voice1)) || voice1;
+
+      let currentLineIndex = 0;
+
+      const playNextLine = () => {
+        if (currentLineIndex >= lines.length || window.currentSpeakSession !== currentSession) return;
+
+        const utterance = new SpeechSynthesisUtterance(lines[currentLineIndex]);
+        utterance.lang = 'zh-CN';
+        
+        if (currentLineIndex % 2 === 0) {
+          utterance.voice = voice1;
+          utterance.pitch = 1.3; 
+          utterance.rate = 0.6; 
+        } else {
+          utterance.voice = voice2;
+          utterance.pitch = (voice1 === voice2) ? 0.75 : 1.0; 
+          utterance.rate = 0.6; 
+        }
+
+        utterance.onend = () => {
+          currentLineIndex++;
+          if (currentLineIndex < lines.length && window.currentSpeakSession === currentSession) {
+            window.dialogueTimeout = setTimeout(playNextLine, 1000);
+          }
+        };
+
+        utterance.onerror = () => {
+          currentLineIndex++;
+          if (currentLineIndex < lines.length && window.currentSpeakSession === currentSession) {
+            playNextLine();
+          }
+        };
+
+        window.speechSynthesis.speak(utterance);
+      };
+
+      playNextLine();
+    };
+
+    const shuffleArray = (array) => [...array].sort(() => Math.random() - 0.5);
+
+    const splitPinyin = (pinyin) => {
+      const toneMap = {
+        'ā': 1, 'ē': 1, 'ī': 1, 'ō': 1, 'ū': 1, 'ǖ': 1,
+        'á': 2, 'é': 2, 'í': 2, 'ó': 2, 'ú': 2, 'ǘ': 2,
+        'ǎ': 3, 'ě': 3, 'ǐ': 3, 'ǒ': 3, 'ǔ': 3, 'ǚ': 3,
+        'à': 4, 'è': 4, 'ì': 4, 'ò': 4, 'ù': 4, 'ǜ': 4
+      };
+      let tone = '輕聲';
+      let rawPinyin = pinyin.toLowerCase();
+
+      for (let i = 0; i < rawPinyin.length; i++) {
+        const char = rawPinyin[i];
+        if (toneMap[char]) {
+          tone = `第${toneMap[char]}聲`;
+          break;
+        }
+      }
+
+      const initialsList = ['zh', 'ch', 'sh', 'b', 'p', 'm', 'f', 'd', 't', 'n', 'l', 'g', 'k', 'h', 'j', 'q', 'x', 'r', 'z', 'c', 's', 'y', 'w'];
+      let initial = '無';
+      let final = rawPinyin;
+
+      for (const ini of initialsList) {
+        if (rawPinyin.startsWith(ini)) {
+          initial = ini;
+          final = rawPinyin.slice(ini.length);
+          break;
+        }
+      }
+      return { initial, final, tone };
+    };
+
+    const removeTones = (pinyin) => {
+      return pinyin.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    };
+
+    const getPinyinSpeechText = (pinyinCode) => {
+      const pinyinMap = {
+        'j': '機', 'q': '七', 'x': '西',
+        'y': '醫', 'zh': '知', 'ch': '吃', 'sh': '詩', 'r': '日',
+        'z': '資', 'c': '疵', 's': '思',
+        'an': '安', 'en': '恩', 'ang': '骯', 'eng': '鞥', 'ong': '嗡'
+      };
+      return pinyinMap[pinyinCode] || pinyinCode;
+    };
+
+    const ListenLearn = () => {
+      const [selectedLesson, setSelectedLesson] = useState('lesson1');
+      const lessons = [
+        { id: 'lesson1', name: '第一課' },
+        { id: 'lesson2', name: '第二課' },
+        { id: 'lesson3', name: '第三課' }
+      ];
+
+      return (
+        <div className="space-y-6">
+          <div className="flex flex-wrap gap-3 justify-center">
+            {lessons.map(lesson => (
+              <button
+                key={lesson.id}
+                onClick={() => setSelectedLesson(lesson.id)}
+                className={`px-6 py-3 rounded-full text-xl font-bold shadow-sm transition-all transform hover:scale-105 active:scale-95 ${
+                  selectedLesson === lesson.id
+                    ? 'bg-yellow-400 text-white border-4 border-yellow-200'
+                    : 'bg-white text-gray-600 hover:bg-yellow-100'
+                }`}
+              >
+                {lesson.name}
+              </button>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+            {vocabData[selectedLesson].map((item, index) => (
+              <div key={index} className="bg-white rounded-3xl shadow-lg p-6 flex items-center justify-between border-b-8 border-r-8 border-teal-100 transform transition hover:-translate-y-2 hover:shadow-xl">
+                <div>
+                  <h2 className="text-4xl font-black text-gray-800 mb-2">{item.word}</h2>
+                  <p className="text-2xl text-teal-500 font-bold">{item.pinyin}</p>
+                </div>
+                <button
+                  onClick={() => speak(item.word, 0.4)}
+                  className="bg-teal-400 text-white p-5 rounded-full shadow-md hover:bg-teal-500 transition-transform transform hover:scale-110 active:scale-90"
+                >
+                  <Volume2 size={36} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    const PinyinBreakdown = () => {
+      const allChars = useMemo(() => {
+        let chars = [];
+        allVocab.forEach(item => {
+          const wordChars = item.word.split('');
+          const pinyinParts = item.pinyin.split(' ');
+          wordChars.forEach((char, idx) => {
+            if (pinyinParts[idx]) {
+              chars.push({ char, pinyin: pinyinParts[idx] });
+            }
+          });
+        });
+        return shuffleArray(chars);
+      }, []);
+
+      const [currentIndex, setCurrentIndex] = useState(0);
+      const currentItem = allChars[currentIndex];
+      const breakdown = splitPinyin(currentItem.pinyin);
+
+      const handleNext = () => {
+        setCurrentIndex((prev) => (prev + 1) % allChars.length);
+      };
+
+      return (
+        <div className="flex flex-col items-center max-w-2xl mx-auto">
+          <div className="bg-white rounded-3xl shadow-xl w-full p-10 text-center border-b-8 border-pink-100 relative overflow-hidden">
+            <div className="absolute top-4 left-4 text-pink-200"><Sparkles size={48} /></div>
+            <div className="absolute bottom-4 right-4 text-yellow-200"><Star size={48} /></div>
+
+            <button 
+               onClick={() => speak(currentItem.char, 0.4)}
+               className="mx-auto bg-gray-100 rounded-full p-3 mb-4 hover:bg-teal-100 transition-colors"
+            >
+              <Volume2 size={28} className="text-teal-500" />
+            </button>
+
+            <h1 className="text-8xl font-black text-gray-800 mb-4">{currentItem.char}</h1>
+            <p className="text-4xl text-gray-500 font-bold mb-10">{currentItem.pinyin}</p>
+
+            <div className="flex flex-col md:flex-row justify-center gap-4 w-full">
+              <div className="flex-1 bg-green-100 rounded-2xl p-4 shadow-sm border-2 border-green-200">
+                <p className="text-green-700 font-bold text-lg mb-2">聲母</p>
+                <p className="text-3xl font-black text-green-600">{breakdown.initial}</p>
+              </div>
+              <div className="flex-1 bg-teal-100 rounded-2xl p-4 shadow-sm border-2 border-teal-200">
+                <p className="text-teal-700 font-bold text-lg mb-2">韻母</p>
+                <p className="text-3xl font-black text-teal-600">{breakdown.final}</p>
+              </div>
+              <div className="flex-1 bg-pink-100 rounded-2xl p-4 shadow-sm border-2 border-pink-200">
+                <p className="text-pink-700 font-bold text-lg mb-2">聲調</p>
+                <p className="text-3xl font-black text-pink-600">{breakdown.tone}</p>
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={handleNext}
+            className="mt-8 bg-pink-400 hover:bg-pink-500 text-white px-10 py-4 rounded-full text-2xl font-bold shadow-lg flex items-center gap-3 transition-transform transform hover:scale-105 active:scale-95"
+          >
+            換下一個字 <ArrowRight size={28} />
+          </button>
+        </div>
+      );
+    };
+
+    const PhoneticsPractice = () => {
+      const soundGroups = [
+        { id: 'lesson1_i', title: '第一課韻母 (ia / ie / iao / iu)', options: ['ia', 'ie', 'iao', 'iu'], type: 'final' },
+        { id: 'lesson2_i', title: '第二課韻母 (ian / in / iang / ing / iong)', options: ['ian', 'in', 'iang', 'ing', 'iong'], type: 'final' },
+        { id: 'in_ing', title: '前鼻與後鼻音辨析 (in / ing)', options: ['in', 'ing'], type: 'final' },
+        { id: 'ian_iang', title: '前鼻與後鼻音辨析 (ian / iang)', options: ['ian', 'iang'], type: 'final' },
+        { id: 'y_initial', title: '第三課：無聲母 y 辨析 (y / j / q / x)', options: ['y', 'j', 'q', 'x'], type: 'initial' },
+        { id: 'all_mix', title: 'i 行韻母超級大挑戰', options: ['ia', 'ie', 'iao', 'iu', 'ian', 'in', 'iang', 'ing', 'iong'], type: 'final' }
+      ];
+
+      const [mode, setMode] = useState('menu'); 
+      const [activeGroup, setActiveGroup] = useState(null);
+      const [quizQuestion, setQuizQuestion] = useState(null);
+      const [feedback, setFeedback] = useState(null);
+      const [score, setScore] = useState(0);
+
+      const allGroupsData = useMemo(() => {
+        const data = {};
+        soundGroups.forEach(g => {
+          data[g.id] = {};
+          g.options.forEach(opt => data[g.id][opt] = []);
+        });
+
+        allVocab.forEach(item => {
+          const chars = item.word.split('');
+          const pinyins = item.pinyin.split(' ');
+
+          chars.forEach((char, idx) => {
+            const py = pinyins[idx];
+            if (!py) return;
+
+            const breakdown = splitPinyin(py);
+            const cleanFinal = removeTones(breakdown.final);
+
+            soundGroups.forEach(g => {
+              g.options.forEach(opt => {
+                if (g.type === 'initial') {
+                  if (breakdown.initial === opt) {
+                    if (!data[g.id][opt].find(x => x.char === char)) data[g.id][opt].push({ char, pinyin: py });
+                  }
+                } else { 
+                  if (cleanFinal.endsWith(opt)) {
+                    if (!data[g.id][opt].find(x => x.char === char)) data[g.id][opt].push({ char, pinyin: py });
+                  }
+                }
+              });
+            });
+          });
+        });
+        return data;
+      }, []);
+
+      const startQuiz = useCallback((group = null) => {
+        setFeedback(null);
+        const pool = [];
+        const groupsToInclude = group ? [group] : soundGroups;
+
+        groupsToInclude.forEach(g => {
+          const gData = allGroupsData[g.id];
+          Object.keys(gData).forEach(opt => {
+            gData[opt].forEach(item => {
+              pool.push({ ...item, correctOpt: opt, parentGroup: g });
+            });
+          });
+        });
+
+        if (pool.length === 0) return;
+        const shuffled = shuffleArray(pool);
+        setQuizQuestion(shuffled[0]);
+        setActiveGroup(group);
+        setMode('quiz');
+      }, [allGroupsData]);
+
+      const handleGuess = (guessOpt) => {
+        if (feedback) return;
+        const speechPronunciation = getPinyinSpeechText(quizQuestion.correctOpt);
+
+        if (guessOpt === quizQuestion.correctOpt) {
+          setFeedback('correct');
+          setScore(s => s + 10);
+          speak(`答對啦！是 ${speechPronunciation}`); 
+        } else {
+          setFeedback('wrong');
+          speak(`不對喔，正確答案是 ${speechPronunciation}`);
+        }
+
+        setTimeout(() => { startQuiz(activeGroup); }, 2500);
+      };
+
+      if (mode === 'menu') {
+        return (
+          <div className="space-y-6 max-w-4xl mx-auto">
+            <div className="bg-purple-100 text-purple-800 p-6 rounded-3xl shadow-sm text-center mb-8">
+              <h2 className="text-2xl font-bold mb-2">👂 聽辨語音分類大挑戰</h2>
+              <p className="text-lg">選擇一個拼音分類進行溫習，或者直接挑戰「綜合大測驗」！</p>
+            </div>
+            
+            <button
+              onClick={() => startQuiz(null)}
+              className="w-full bg-gradient-to-r from-purple-400 to-pink-500 hover:from-purple-500 hover:to-pink-600 text-white p-8 rounded-3xl shadow-lg transition-all transform hover:scale-105 flex flex-col items-center gap-4 mb-4 border-4 border-purple-200"
+            >
+              <h3 className="text-4xl font-black flex items-center gap-3"><Star size={40} className="fill-yellow-300 text-yellow-300"/> 綜合聽音大挑戰 <Star size={40} className="fill-yellow-300 text-yellow-300"/></h3>
+              <p className="text-2xl font-bold text-purple-100">隨機測驗所有容易混淆的 i 行韻母！</p>
+            </button>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {soundGroups.map(group => (
+                <button
+                  key={group.id}
+                  onClick={() => { setActiveGroup(group); setMode('study'); }}
+                  className="bg-white hover:bg-purple-50 border-4 border-transparent hover:border-purple-300 p-8 rounded-3xl shadow-md transition-all transform hover:scale-105 flex flex-col items-center gap-4"
+                >
+                  <h3 className="text-2xl font-black text-gray-700">{group.title}</h3>
+                  <p className="text-xl font-bold text-purple-500">{group.options.join(' / ')}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      }
+
+      if (mode === 'study' && activeGroup) {
+        return (
+          <div className="max-w-5xl mx-auto">
+            <button 
+              onClick={() => setMode('menu')}
+              className="mb-6 flex items-center gap-2 text-purple-600 font-bold hover:bg-purple-100 px-4 py-2 rounded-full transition-colors"
+            >
+              <ArrowLeft size={20} /> 返回選擇
+            </button>
+            
+            <div className="bg-white rounded-[3rem] p-8 shadow-xl border-b-[12px] border-purple-200 text-center">
+              <h2 className="text-3xl font-black text-gray-800 mb-2">{activeGroup.title}</h2>
+              <p className="text-gray-500 mb-8">點擊單字聽聽看，找找它們的規律！準備好了就開始挑戰。</p>
+
+              <div className={`grid gap-6 mb-10 ${activeGroup.options.length <= 3 ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-1 md:grid-cols-4'}`}>
+                {activeGroup.options.map(opt => (
+                  <div key={opt} className="bg-purple-50 rounded-3xl p-6 border-t-8 border-purple-300 shadow-sm">
+                    <h3 className="text-5xl font-black text-purple-600 mb-6">{opt}</h3>
+                    <div className="flex flex-wrap justify-center gap-3">
+                      {allGroupsData[activeGroup.id][opt].length > 0 ? (
+                        allGroupsData[activeGroup.id][opt].map((item, i) => (
+                          <button 
+                            key={i} 
+                            onClick={() => speak(item.char, 0.4)}
+                            className="bg-white border-2 border-purple-100 px-4 py-2 rounded-2xl text-2xl font-black text-gray-700 hover:bg-purple-200 hover:border-purple-300 transition-transform transform hover:scale-110 active:scale-95 flex flex-col items-center shadow-sm"
+                          >
+                            <span>{item.char}</span>
+                            <span className="text-sm font-bold text-purple-400 mt-1">{item.pinyin}</span>
+                          </button>
+                        ))
+                      ) : (
+                        <span className="text-gray-400 font-bold text-sm">本課暫無此拼音詞語</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={() => startQuiz(activeGroup)}
+                className="bg-purple-500 hover:bg-purple-600 text-white px-10 py-4 rounded-full text-2xl font-bold shadow-lg flex items-center justify-center gap-3 mx-auto transition-transform transform hover:scale-110 active:scale-95"
+              >
+                <Headphones size={28} /> 開始聽音挑戰！
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      if (mode === 'quiz' && quizQuestion) {
+        const optionsToShow = quizQuestion.parentGroup.options;
+        const title = activeGroup ? activeGroup.title : '🏆 綜合聽音大挑戰';
+
+        return (
+          <div className="max-w-3xl mx-auto text-center">
+            <div className="flex justify-between items-center mb-6">
+              <button 
+                onClick={() => setMode('menu')}
+                className="flex items-center gap-2 text-purple-600 font-bold hover:bg-purple-100 px-4 py-2 rounded-full transition-colors"
+              >
+                <ArrowLeft size={20} /> 返回主選單
+              </button>
+              <div className="hidden md:block text-2xl font-black text-purple-700 bg-purple-100 px-6 py-2 rounded-full">
+                {title}
+              </div>
+              <div className="bg-yellow-300 flex items-center gap-2 px-6 py-2 rounded-full text-xl font-black text-yellow-900 shadow-sm">
+                <Star size={24} className="fill-yellow-500 text-yellow-600" /> 
+                得分: {score}
+              </div>
+            </div>
+
+            <div className="bg-white rounded-[3rem] p-10 shadow-xl border-b-[12px] border-purple-200 relative overflow-hidden min-h-[400px] flex flex-col justify-center">
+              {feedback === 'correct' && (
+                <div className="absolute inset-0 bg-green-100/95 z-10 flex flex-col items-center justify-center animate-bounce">
+                  <h2 className="text-8xl font-black text-green-600 mb-4 drop-shadow-sm">{quizQuestion.char}</h2>
+                  <p className="text-4xl font-bold text-green-500 mb-6">{quizQuestion.pinyin}</p>
+                  <div className="bg-green-500 text-white px-8 py-3 rounded-full text-3xl font-black shadow-md flex items-center gap-3">
+                    <CheckCircle2 size={36} /> 答對啦！是 {quizQuestion.correctOpt}
+                  </div>
+                </div>
+              )}
+              {feedback === 'wrong' && (
+                <div className="absolute inset-0 bg-red-50/95 z-10 flex flex-col items-center justify-center">
+                  <h2 className="text-8xl font-black text-red-500 mb-4 drop-shadow-sm">{quizQuestion.char}</h2>
+                  <p className="text-4xl font-bold text-red-400 mb-6">{quizQuestion.pinyin}</p>
+                  <div className="bg-red-400 text-white px-8 py-3 rounded-full text-3xl font-black shadow-md flex items-center gap-3 animate-pulse">
+                    <XCircle size={36} /> 哎呀！正確是 {quizQuestion.correctOpt}
+                  </div>
+                </div>
+              )}
+
+              <div className="mb-12">
+                <button 
+                  onClick={() => speak(quizQuestion.char, 0.4)}
+                  className="bg-purple-400 hover:bg-purple-500 text-white p-10 rounded-full shadow-lg transform transition hover:scale-110 active:scale-95 animate-pulse mx-auto block"
+                >
+                  <Volume2 size={80} />
+                </button>
+                <p className="mt-6 text-2xl font-bold text-gray-500">🎧 仔細聽，剛才念的字包含哪一個音？</p>
+              </div>
+
+              <div className="flex flex-wrap justify-center gap-4">
+                {optionsToShow.map(opt => (
+                  <button
+                    key={opt}
+                    onClick={() => handleGuess(opt)}
+                    className="bg-gray-50 border-4 border-gray-100 hover:border-purple-400 hover:bg-purple-50 text-4xl font-black text-gray-700 w-28 h-24 rounded-3xl shadow-sm transition-all transform hover:scale-110 active:scale-95 flex items-center justify-center"
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      return null;
+    };
+
+    const ComprehensionQuiz = () => {
+      const [selectedLesson, setSelectedLesson] = useState('lesson1');
+      const [currentQIndex, setCurrentQIndex] = useState(0);
+      const [score, setScore] = useState(0);
+      const [feedback, setFeedback] = useState(null);
+
+      const lessons = [
+        { id: 'lesson1', name: '第一課' },
+        { id: 'lesson2', name: '第二課' },
+        { id: 'lesson3', name: '第三課' }
+      ];
+
+      const compData = {
+        lesson1: [
+          { 
+            dialogue: "「言希，聽說你搬家了。你現在住哪兒？」\n「我住九龍灣。博文也住在那裏。」",
+            q: "言希現在住在哪裏？", answer: "九龍灣", options: ["九龍灣", "旺角", "沙田"] 
+          },
+          { 
+            dialogue: "「言希，聽說你搬家了。你現在住哪兒？」\n「我住九龍灣。博文也住在那裏。」",
+            q: "除了言希，還有誰也住在九龍灣？", answer: "博文", options: ["博文", "心怡", "老師"] 
+          }
+        ],
+        lesson2: [
+          { 
+            dialogue: "「阿姨、小莉，你們好！」\n「歡迎你們，請進！請這邊坐！我去倒茶。」\n「你真乖！」",
+            q: "客人來到時，小莉一家請客人做甚麼？", answer: "請進和這邊坐", options: ["請進和這邊坐", "一起玩遊戲", "看電視"] 
+          },
+          { 
+            dialogue: "「請用茶。」\n「謝謝！」\n「不客氣！小莉，冰箱裏有布丁，拿出來請志民吃。」\n「好哇！」",
+            q: "媽媽請小莉從冰箱裏拿出甚麼請志民吃？", answer: "布丁", options: ["布丁", "蛋糕", "果汁"] 
+          }
+        ],
+        lesson3: [
+          { 
+            dialogue: "「這兒的風景真漂亮！咱們去放風箏吧。」\n「我同意！」\n「我想先吃點兒東西，我餓了。」",
+            q: "偉邦提議大家去玩甚麼？", answer: "放風箏", options: ["放風箏", "跳繩", "游泳"] 
+          },
+          { 
+            dialogue: "「這兒的風景真漂亮！咱們去放風箏吧。」\n「我同意！」\n「我想先吃點兒東西，我餓了。」",
+            q: "為甚麼心怡不想先去放風箏？", answer: "因為她餓了，想吃東西", options: ["因為她餓了，想吃東西", "因為她想睡覺", "因為她怕曬"] 
+          },
+          { 
+            dialogue: "「這樣吧，你和爸爸去野餐，我和哥哥去放風箏。」\n「下次咱們來這裏燒烤，好嗎？」\n「好主意，我贊成！」",
+            q: "他們約定下次來這裏做甚麼？", answer: "燒烤", options: ["燒烤", "野餐", "游泳"] 
+          }
+        ]
+      };
+
+      const currentQuestions = compData[selectedLesson];
+      const question = currentQuestions[currentQIndex];
+
+      const shuffledOptions = useMemo(() => {
+        if (!question) return [];
+        return shuffleArray([...question.options]);
+      }, [question]);
+
+      const handleLessonChange = (id) => {
+        setSelectedLesson(id);
+        setCurrentQIndex(0);
+        setFeedback(null);
+      };
+
+      const handleOptionClick = (option) => {
+        if (feedback) return;
+
+        if (option === question.answer) {
+          setFeedback('correct');
+          setScore(s => s + 10);
+          speak('答對啦！', 0.6); 
+          setTimeout(() => {
+            setFeedback(null);
+            if (currentQIndex < currentQuestions.length - 1) {
+              setCurrentQIndex(i => i + 1);
+            } else {
+              speak('你已經完成這一課的練習了！', 0.6);
+              setCurrentQIndex(0); 
+            }
+          }, 2000);
+        } else {
+          setFeedback('wrong');
+          speak('再試一次', 0.6);
+          setTimeout(() => { setFeedback(null); }, 1500);
+        }
+      };
+
+      return (
+        <div className="space-y-6 max-w-4xl mx-auto text-center">
+          
+          <div className="flex flex-wrap gap-3 justify-center mb-8">
+            {lessons.map(lesson => (
+              <button
+                key={lesson.id}
+                onClick={() => handleLessonChange(lesson.id)}
+                className={`px-6 py-3 rounded-full text-xl font-bold shadow-sm transition-all transform hover:scale-105 active:scale-95 ${
+                  selectedLesson === lesson.id
+                    ? 'bg-orange-400 text-white border-4 border-orange-200'
+                    : 'bg-white text-gray-600 hover:bg-orange-100'
+                }`}
+              >
+                {lesson.name}
+              </button>
+            ))}
+          </div>
+
+          <div className="bg-yellow-300 inline-flex items-center gap-3 px-8 py-3 rounded-full text-2xl font-black text-yellow-900 shadow-md mb-4">
+            <Star size={32} className="fill-yellow-500 text-yellow-600" /> 
+            分數: {score} 分
+          </div>
+
+          <div className="bg-white rounded-[3rem] shadow-xl p-8 md:p-12 border-b-[12px] border-orange-200 relative overflow-hidden">
+            
+            {feedback === 'correct' && (
+              <div className="absolute inset-0 bg-green-100 bg-opacity-95 z-10 flex flex-col items-center justify-center animate-bounce">
+                <CheckCircle2 size={120} className="text-green-500 mb-4" />
+                <h2 className="text-5xl font-black text-green-600">答對啦！</h2>
+              </div>
+            )}
+            {feedback === 'wrong' && (
+              <div className="absolute inset-0 bg-red-50 bg-opacity-95 z-10 flex flex-col items-center justify-center">
+                <XCircle size={100} className="text-red-400 mb-4 animate-pulse" />
+                <h2 className="text-4xl font-black text-red-500">哎呀，再想想看！</h2>
+              </div>
+            )}
+
+            <div className="mb-4 text-orange-400 font-bold text-xl tracking-widest">
+              題目 {currentQIndex + 1} / {currentQuestions.length}
+            </div>
+
+            <div className="bg-orange-50 rounded-3xl p-6 md:p-8 mb-6 shadow-inner text-left border-l-8 border-orange-300 relative">
+              <div className="flex items-center gap-4 mb-4">
+                <button 
+                  onClick={() => speakDialogue(question.dialogue)}
+                  className="bg-orange-200 hover:bg-orange-300 text-orange-700 p-4 rounded-full transition-transform transform hover:scale-110 active:scale-95"
+                >
+                  <Volume2 size={32} />
+                </button>
+                <h3 className="text-2xl font-bold text-orange-700">📖 聽聽看這段對話：</h3>
+              </div>
+              <p className="text-xl md:text-2xl text-gray-700 font-medium whitespace-pre-line leading-relaxed pl-4">
+                {question.dialogue}
+              </p>
+            </div>
+
+            <div className="bg-white border-4 border-orange-100 rounded-3xl p-6 mb-8 flex flex-col md:flex-row items-center gap-6">
+              <button 
+                onClick={() => speak(question.q, 0.6)}
+                className="bg-orange-400 hover:bg-orange-500 text-white p-5 rounded-full shadow-md transform transition hover:scale-110 active:scale-95 flex-shrink-0"
+              >
+                <Volume2 size={36} />
+              </button>
+              <h2 className="text-3xl font-black text-gray-800 text-left">
+                {question.q}
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
+              {shuffledOptions.map((option, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleOptionClick(option)}
+                  className="bg-white border-4 border-orange-100 hover:border-orange-400 hover:bg-orange-50 text-2xl font-bold text-gray-700 py-6 px-8 rounded-3xl shadow-sm transition-all transform hover:scale-105 active:scale-95 text-left flex items-center gap-4"
+                >
+                  <div className="bg-orange-200 text-orange-700 rounded-full w-12 h-12 flex items-center justify-center text-xl flex-shrink-0">
+                    {['A', 'B', 'C'][idx]}
+                  </div>
+                  {option}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const QuizTime = () => {
+      const [score, setScore] = useState(0);
+      const [question, setQuestion] = useState(null);
+      const [feedback, setFeedback] = useState(null); 
+      
+      const generateQuestion = useCallback(() => {
+        setFeedback(null);
+        const type = Math.random() > 0.5 ? 1 : 2; 
+        const shuffledVocab = shuffleArray(allVocab);
+        const target = shuffledVocab[0];
+        const distractors = shuffledVocab.slice(1, 4);
+        
+        let options = [];
+        if (type === 1) {
+          options = shuffleArray([target, ...distractors].map(item => item.word));
+        } else {
+          options = shuffleArray([target, ...distractors].map(item => item.pinyin));
+        }
+
+        setQuestion({ type, target, options });
+      }, []);
+
+      useEffect(() => {
+        generateQuestion();
+      }, [generateQuestion]);
+
+      const handleOptionClick = (option) => {
+        if (feedback) return; 
+
+        const isCorrect = 
+          (question.type === 1 && option === question.target.word) || 
+          (question.type === 2 && option === question.target.pinyin);
+
+        if (isCorrect) {
+          setFeedback('correct');
+          setScore(s => s + 10);
+          speak('太棒了');
+          setTimeout(() => { generateQuestion(); }, 1500);
+        } else {
+          setFeedback('wrong');
+          speak('再試一次');
+          setTimeout(() => { setFeedback(null); }, 1000);
+        }
+      };
+
+      if (!question) return null;
+
+      return (
+        <div className="max-w-3xl mx-auto text-center">
+          <div className="bg-yellow-300 inline-flex items-center gap-3 px-8 py-3 rounded-full text-2xl font-black text-yellow-900 shadow-md mb-8 transform hover:rotate-3 transition-transform">
+            <Star size={32} className="fill-yellow-500 text-yellow-600" /> 
+            分數: {score} 分
+          </div>
+
+          <div className="bg-white rounded-[3rem] shadow-xl p-8 md:p-12 border-b-[12px] border-green-200 relative">
+            {feedback === 'correct' && (
+              <div className="absolute inset-0 bg-green-100 bg-opacity-90 rounded-[3rem] z-10 flex flex-col items-center justify-center animate-bounce">
+                <CheckCircle2 size={120} className="text-green-500 mb-4" />
+                <h2 className="text-5xl font-black text-green-600">太棒了！</h2>
+              </div>
+            )}
+            {feedback === 'wrong' && (
+              <div className="absolute inset-0 bg-red-50 bg-opacity-90 rounded-[3rem] z-10 flex flex-col items-center justify-center">
+                <XCircle size={100} className="text-red-400 mb-4 animate-pulse" />
+                <h2 className="text-4xl font-black text-red-500">哎呀，再試一次吧！</h2>
+              </div>
+            )}
+
+            <h2 className="text-3xl font-bold text-gray-600 mb-8">
+              {question.type === 1 ? '🎧 聽聲音，選出正確的詞語' : '👀 看詞語，選出正確的拼音'}
+            </h2>
+
+            <div className="mb-10 min-h-[120px] flex items-center justify-center">
+              {question.type === 1 ? (
+                <button 
+                  onClick={() => speak(question.target.word, 0.4)}
+                  className="bg-blue-400 hover:bg-blue-500 text-white p-8 rounded-full shadow-lg transform transition hover:scale-110 active:scale-95 animate-pulse"
+                >
+                  <Volume2 size={64} />
+                </button>
+              ) : (
+                <h1 className="text-7xl font-black text-gray-800 tracking-widest">{question.target.word}</h1>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {question.options.map((option, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleOptionClick(option)}
+                  className="bg-gray-50 border-4 border-gray-100 hover:border-yellow-300 hover:bg-yellow-50 text-3xl font-bold text-gray-700 py-6 px-4 rounded-3xl shadow-sm transition-all transform hover:scale-105 active:scale-95"
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    function App() {
+      const [activeTab, setActiveTab] = useState('listen');
+
+      const tabs = [
+        { id: 'listen', label: '發音認字卡', icon: <BookOpen size={24} />, color: 'bg-teal-400 hover:bg-teal-500' },
+        { id: 'breakdown', label: '語音解碼', icon: <Search size={24} />, color: 'bg-pink-400 hover:bg-pink-500' },
+        { id: 'phonetics', label: '聽辨分類', icon: <Headphones size={24} />, color: 'bg-purple-400 hover:bg-purple-500' },
+        { id: 'comprehension', label: '課文理解', icon: <HelpCircle size={24} />, color: 'bg-orange-400 hover:bg-orange-500' },
+        { id: 'quiz', label: '綜合測驗', icon: <Gamepad2 size={24} />, color: 'bg-green-400 hover:bg-green-500' }
+      ];
+
+      return (
+        <div className="min-h-screen bg-emerald-50 flex flex-col justify-between">
+          <div>
+            <header className="bg-white shadow-sm pt-8 pb-4 px-4 sticky top-0 z-50">
+              <div className="max-w-5xl mx-auto text-center">
+                <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-teal-500 via-emerald-500 to-cyan-500 mb-6 drop-shadow-sm">
+                  🌟 拼音快樂學 (P2T1) 🌟
+                </h1>
+                
+                <div className="flex flex-wrap justify-center gap-4">
+                  {tabs.map(tab => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`flex items-center gap-2 px-6 py-4 rounded-2xl text-xl font-bold transition-all transform hover:scale-105 active:scale-95 shadow-md
+                        ${activeTab === tab.id ? `${tab.color} text-white ring-4 ring-opacity-50 ring-${tab.color.split('-')[1]}-300 translate-y-1` : 'bg-white text-gray-600 hover:bg-gray-100'}`}
+                    >
+                      {tab.icon}
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </header>
+
+            <main className="max-w-6xl mx-auto p-6 md:p-10">
+              {activeTab === 'listen' && <ListenLearn />}
+              {activeTab === 'breakdown' && <PinyinBreakdown />}
+              {activeTab === 'phonetics' && <PhoneticsPractice />}
+              {activeTab === 'comprehension' && <ComprehensionQuiz />}
+              {activeTab === 'quiz' && <QuizTime />}
+            </main>
+          </div>
+          
+          <footer className="bg-white py-4 text-center text-gray-400 text-sm font-semibold border-t">
+            🌈 讓學習拼音變得好玩又簡單！
+          </footer>
+        </div>
+      );
+    }
+
+    const root = createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
