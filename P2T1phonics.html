@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pokémon Phonics Master</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f0fdf4;
+            background-image: radial-gradient(#dcfce7 2px, transparent 2px);
+            background-size: 30px 30px;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* 3D Button Styles */
+        .btn-3d {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 24px;
+            font-weight: 900;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), filter 0.2s;
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+        .btn-3d:hover { filter: brightness(1.1); transform: translateY(-2px); }
+        .btn-3d:active { transform: translateY(8px); filter: brightness(0.9); }
+
+        /* Mascot Colors */
+        .poke-yellow { background-color: #fcd34d; box-shadow: 0 10px 0 #d97706; border: 4px solid #fde68a; color: #78350f; }
+        .poke-yellow:active { box-shadow: 0 2px 0 #d97706; }
+        
+        .poke-cream { background-color: #fef3c7; box-shadow: 0 10px 0 #d97706; border: 4px solid #fffbeb; color: #78350f; }
+        .poke-cream:active { box-shadow: 0 2px 0 #d97706; }
+        
+        .poke-purple { background-color: #c084fc; box-shadow: 0 10px 0 #7e22ce; border: 4px solid #e9d5ff; color: white; }
+        .poke-purple:active { box-shadow: 0 2px 0 #7e22ce; }
+        
+        .poke-orange { background-color: #fb923c; box-shadow: 0 10px 0 #c2410c; border: 4px solid #fed7aa; color: white; }
+        .poke-orange:active { box-shadow: 0 2px 0 #c2410c; }
+
+        /* Answer Buttons (Matching previous design) */
+        .ans-d { background-color: #3b82f6; box-shadow: 0 12px 0 #1e3a8a; border: 4px solid #93c5fd; }
+        .ans-d:active { box-shadow: 0 4px 0 #1e3a8a; }
+        
+        .ans-t { background-color: #ec4899; box-shadow: 0 12px 0 #831843; border: 4px solid #f9a8d4; }
+        .ans-t:active { box-shadow: 0 4px 0 #831843; }
+        
+        .ans-id { background-color: #a855f7; box-shadow: 0 12px 0 #581c87; border: 4px solid #d8b4fe; }
+        .ans-id:active { box-shadow: 0 4px 0 #581c87; }
+        
+        .ans-s { background-color: #10b981; box-shadow: 0 12px 0 #064e3b; border: 4px solid #6ee7b7; }
+        .ans-s:active { box-shadow: 0 4px 0 #064e3b; }
+        
+        .ans-z { background-color: #f97316; box-shadow: 0 12px 0 #7c2d12; border: 4px solid #fdba74; }
+        .ans-z:active { box-shadow: 0 4px 0 #7c2d12; }
+        
+        .ans-iz { background-color: #eab308; box-shadow: 0 12px 0 #713f12; border: 4px solid #fef08a; color: #451a03; }
+        .ans-iz:active { box-shadow: 0 4px 0 #713f12; }
+
+        /* Utility Classes */
+        .hidden { display: none !important; }
+        
+        /* Animations */
+        @keyframes popIn {
+            0% { transform: scale(0.8) translate(-50%, -50%); opacity: 0; }
+            100% { transform: scale(1) translate(-50%, -50%); opacity: 1; }
+        }
+        .modal-animate {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        
+        .poke-img { filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2)); }
+        .bg-poke-watermark {
+            position: absolute;
+            right: -10%;
+            bottom: -10%;
+            height: 150px;
+            opacity: 0.15;
+            transform: rotate(-10deg);
+            pointer-events: none;
+        }
+
+        /* Highlighting specific letters */
+        .hl-voiced { color: #2563eb; font-weight: 900; }
+        .hl-voiceless { color: #e11d48; font-weight: 900; }
+        .hl-rocket { color: #7e22ce; font-weight: 900; }
+        .hl-charizard { color: #c2410c; font-weight: 900; }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <div id="app" class="max-w-4xl mx-auto min-h-screen p-4 flex flex-col relative">
+
+        <!-- ==================== TUTORIAL VIEW ==================== -->
+        <div id="tutorial-view" class="flex-grow flex flex-col pt-4 pb-12">
+            <h1 class="text-4xl md:text-5xl font-black text-center text-emerald-600 drop-shadow-md mb-2">Pokémon Phonics!</h1>
+            <p class="text-center text-lg md:text-xl text-emerald-700 font-bold mb-8">Let's learn the '-ed' and '-s' ending sounds!</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                
+                <!-- Pikachu (Voiced) -->
+                <div class="poke-yellow p-6 rounded-3xl relative overflow-hidden">
+                    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" class="bg-poke-watermark" alt="Pikachu BG">
+                    <div class="flex items-center gap-3 mb-4 relative z-10">
+                        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" class="h-16 w-16 poke-img" alt="Pikachu">
+                        <h2 class="text-2xl font-black">Pikachu (Voiced)</h2>
+                    </div>
+                    <p class="text-lg font-bold mb-2 relative z-10">Your vocal cords vibrate!</p>
+                    <div class="bg-white/60 p-3 rounded-xl shadow-sm font-bold text-xl leading-relaxed relative z-10">
+                        '-ed' ➔ sounds like <span class="text-blue-700 font-black">/d/</span> (e.g. ca<span class="hl-voiced">ll</span>ed)<br>
+                        '-s' ➔ sounds like <span class="text-blue-700 font-black">/z/</span> (e.g. spi<span class="hl-voiced">ll</span>s)
+                    </div>
+                </div>
+
+                <!-- Meowth (Voiceless) -->
+                <div class="poke-cream p-6 rounded-3xl relative overflow-hidden">
+                    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/52.png" class="bg-poke-watermark" alt="Meowth BG">
+                    <div class="flex items-center gap-3 mb-4 relative z-10">
+                        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/52.png" class="h-16 w-16 poke-img" alt="Meowth">
+                        <h2 class="text-2xl font-black">Meowth (Voiceless)</h2>
+                    </div>
+                    <p class="text-lg font-bold mb-2 relative z-10">Your vocal cords are quiet!</p>
+                    <div class="bg-white/60 p-3 rounded-xl shadow-sm font-bold text-xl leading-relaxed relative z-10">
+                        '-ed' ➔ sounds like <span class="text-pink-600 font-black">/t/</span> (e.g. loo<span class="hl-voiceless">k</span>ed)<br>
+                        '-s' ➔ sounds like <span class="text-pink-600 font-black">/s/</span> (e.g. lau<span class="hl-voiceless">gh</span>s)
+                    </div>
+                </div>
+
+                <!-- Team Rocket (t & d) -->
+                <div class="poke-purple p-6 rounded-3xl relative overflow-hidden">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Team_Rocket_Logo.svg/1024px-Team_Rocket_Logo.svg.png" class="bg-poke-watermark opacity-20" alt="Team Rocket BG">
+                    <div class="flex items-center gap-3 mb-4 relative z-10">
+                        <div class="relative h-16 w-16 flex items-center justify-center poke-img">
+                            <img src="https://upload.wikimedia.org/wikipedia/en/5/53/Jessie_%26_James.png" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Team_Rocket_Logo.svg/1024px-Team_Rocket_Logo.svg.png'" class="h-16 object-contain absolute z-10" alt="Team Rocket">
+                        </div>
+                        <h2 class="text-2xl font-black">Team Rocket (t & d)</h2>
+                    </div>
+                    <p class="text-lg font-bold mb-2 relative z-10">The special '-ed' rule!</p>
+                    <div class="bg-white/20 p-3 rounded-xl shadow-sm font-bold text-xl leading-relaxed relative z-10">
+                        '-ed' ➔ sounds like <span class="text-white font-black drop-shadow-md">/id/</span> <br>
+                        (e.g. soun<span class="hl-rocket bg-white px-1 rounded text-purple-700">d</span>ed, hun<span class="hl-rocket bg-white px-1 rounded text-purple-700">t</span>ed)
+                    </div>
+                </div>
+
+                <!-- Charizard (Hissing sounds) -->
+                <div class="poke-orange p-6 rounded-3xl relative overflow-hidden">
+                    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png" class="bg-poke-watermark" alt="Charizard BG">
+                    <div class="flex items-center gap-3 mb-4 relative z-10">
+                        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png" class="h-16 w-16 poke-img" alt="Charizard">
+                        <h2 class="text-2xl font-black text-white">Charizard (Hissing)</h2>
+                    </div>
+                    <p class="text-lg font-bold mb-2 text-white relative z-10">Words ending in s, z, ch, sh, x!</p>
+                    <div class="bg-white/20 p-3 rounded-xl shadow-sm font-bold text-xl leading-relaxed text-white relative z-10">
+                        '-s/-es' ➔ sounds like <span class="font-black drop-shadow-md">/iz/</span> <br>
+                        (e.g. ca<span class="hl-charizard bg-white px-1 rounded text-orange-700">tch</span>es, bo<span class="hl-charizard bg-white px-1 rounded text-orange-700">x</span>es)
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="text-center mt-auto">
+                <button onclick="startGame()" class="btn-3d bg-emerald-500 box-shadow-emerald text-white text-3xl py-6 px-12 inline-flex" style="box-shadow: 0 10px 0 #047857; border: 4px solid #6ee7b7;">
+                    START QUIZ! 🎮
+                </button>
+            </div>
+        </div>
+
+        <!-- ==================== GAME VIEW ==================== -->
+        <div id="game-view" class="hidden flex-grow flex flex-col relative w-full h-full pb-6">
+            <!-- Header Info -->
+            <div class="flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border-2 border-emerald-100 mb-6 mt-2">
+                <div class="text-xl md:text-2xl font-black text-slate-500">
+                    Question: <span id="question-counter" class="text-emerald-500">1</span>/30
+                </div>
+                <div class="text-xl md:text-2xl font-black text-slate-500">
+                    Score: <span id="score-counter" class="text-amber-500">0</span>
+                </div>
+            </div>
+
+            <!-- Word Display -->
+            <div class="flex-grow flex justify-center items-center py-10">
+                <h2 id="word-display" class="text-7xl md:text-8xl lg:text-9xl font-black text-slate-800 tracking-wider text-center drop-shadow-md transition-transform duration-300 transform">
+                    word
+                </h2>
+            </div>
+
+            <!-- Answer Buttons -->
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 mt-auto px-2">
+                <!-- Left Col conceptually -->
+                <button onclick="checkAnswer('/d/')" class="btn-3d ans-d py-6 md:py-8 text-5xl md:text-6xl">/d/</button>
+                <button onclick="checkAnswer('/t/')" class="btn-3d ans-t py-6 md:py-8 text-5xl md:text-6xl">/t/</button>
+                <button onclick="checkAnswer('/id/')" class="btn-3d ans-id py-6 md:py-8 text-5xl md:text-6xl">/id/</button>
+                <!-- Right Col conceptually -->
+                <button onclick="checkAnswer('/s/')" class="btn-3d ans-s py-6 md:py-8 text-5xl md:text-6xl">/s/</button>
+                <button onclick="checkAnswer('/z/')" class="btn-3d ans-z py-6 md:py-8 text-5xl md:text-6xl">/z/</button>
+                <button onclick="checkAnswer('/iz/')" class="btn-3d ans-iz py-6 md:py-8 text-5xl md:text-6xl">/iz/</button>
+            </div>
+
+            <!-- Feedback Modal Overlay -->
+            <div id="feedback-overlay" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-sm rounded-3xl z-10">
+                <div id="feedback-box" class="modal-animate bg-white w-11/12 max-w-lg rounded-3xl shadow-2xl p-8 border-8 flex flex-col items-center text-center">
+                    <img id="fb-icon" src="" class="h-28 w-28 mb-4 poke-img object-contain" alt="Mascot">
+                    <h3 id="fb-title" class="text-4xl font-black mb-4">Correct! 🎉</h3>
+                    <!-- Highlighted Word -->
+                    <div id="fb-word-display" class="text-5xl font-black text-slate-700 mb-6 bg-slate-100 py-3 px-6 rounded-2xl">
+                        ca<span class="hl-voiced">ll</span>ed
+                    </div>
+                    <p id="fb-explanation" class="text-xl md:text-2xl font-bold text-slate-600 mb-8 leading-relaxed">
+                        Explanation goes here.
+                    </p>
+                    <button onclick="nextQuestion()" class="btn-3d bg-slate-800 text-white text-2xl py-4 px-10 w-full" style="box-shadow: 0 8px 0 #334155; border: 4px solid #94a3b8;">
+                        Next Question ➔
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== VICTORY VIEW ==================== -->
+        <div id="victory-view" class="hidden flex-grow flex flex-col justify-center items-center text-center">
+            <div class="text-8xl mb-6 animate-bounce">🏆</div>
+            <h1 class="text-5xl md:text-7xl font-black text-amber-500 drop-shadow-md mb-4">Game Over!</h1>
+            <p class="text-3xl font-bold text-slate-600 mb-8">Your Final Score:</p>
+            <div class="text-8xl font-black text-emerald-500 bg-white border-8 border-emerald-200 rounded-full w-64 h-64 flex justify-center items-center shadow-xl mb-12">
+                <span id="final-score">0</span>
+            </div>
+            
+            <button onclick="initTutorial()" class="btn-3d bg-blue-500 text-white text-3xl py-6 px-12" style="box-shadow: 0 10px 0 #1d4ed8; border: 4px solid #93c5fd;">
+                🔄 Play Again
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // Mascot Image URLs
+        const imgPikachu = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png";
+        const imgMeowth = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/52.png";
+        const imgRocket = "https://upload.wikimedia.org/wikipedia/en/5/53/Jessie_%26_James.png";
+        const imgRocketFallback = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Team_Rocket_Logo.svg/1024px-Team_Rocket_Logo.svg.png";
+        const imgCharizard = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png";
+
+        // Data containing the 30 specific words, rules, highlights and explanations
+        const wordData = [
+            // /d/ - Pikachu (Voiced ed)
+            { w: "called", p1: "ca", h: "ll", p2: "ed", ans: "/d/", mascotName: "Pikachu", mascotImg: imgPikachu, type: "hl-voiced", exp: "Correct! 'call' ends in a voiced 'l' sound, so '-ed' makes a /d/ sound!" },
+            { w: "followed", p1: "foll", h: "ow", p2: "ed", ans: "/d/", mascotName: "Pikachu", mascotImg: imgPikachu, type: "hl-voiced", exp: "Correct! 'follow' ends in a voiced 'w' sound, so '-ed' makes a /d/ sound!" },
+            { w: "played", p1: "pl", h: "ay", p2: "ed", ans: "/d/", mascotName: "Pikachu", mascotImg: imgPikachu, type: "hl-voiced", exp: "Correct! 'play' ends in a voiced 'y' sound, so '-ed' makes a /d/ sound!" },
+            { w: "hummed", p1: "hu", h: "mm", p2: "ed", ans: "/d/", mascotName: "Pikachu", mascotImg: imgPikachu, type: "hl-voiced", exp: "Correct! 'hum' ends in a voiced 'm' sound, so '-ed' makes a /d/ sound!" },
+            { w: "cleaned", p1: "clea", h: "n", p2: "ed", ans: "/d/", mascotName: "Pikachu", mascotImg: imgPikachu, type: "hl-voiced", exp: "Correct! 'clean' ends in a voiced 'n' sound, so '-ed' makes a /d/ sound!" },
+            
+            // /t/ - Meowth (Voiceless ed)
+            { w: "looked", p1: "loo", h: "k", p2: "ed", ans: "/t/", mascotName: "Meowth", mascotImg: imgMeowth, type: "hl-voiceless", exp: "Correct! 'look' ends in a voiceless 'k', so '-ed' makes a /t/ sound!" },
+            { w: "missed", p1: "mi", h: "ss", p2: "ed", ans: "/t/", mascotName: "Meowth", mascotImg: imgMeowth, type: "hl-voiceless", exp: "Correct! 'miss' ends in a voiceless 's', so '-ed' makes a /t/ sound!" },
+            { w: "flipped", p1: "fli", h: "pp", p2: "ed", ans: "/t/", mascotName: "Meowth", mascotImg: imgMeowth, type: "hl-voiceless", exp: "Correct! 'flip' ends in a voiceless 'p', so '-ed' makes a /t/ sound!" },
+            { w: "jumped", p1: "jum", h: "p", p2: "ed", ans: "/t/", mascotName: "Meowth", mascotImg: imgMeowth, type: "hl-voiceless", exp: "Correct! 'jump' ends in a voiceless 'p', so '-ed' makes a /t/ sound!" },
+            { w: "washed", p1: "wa", h: "sh", p2: "ed", ans: "/t/", mascotName: "Meowth", mascotImg: imgMeowth, type: "hl-voiceless", exp: "Correct! 'wash' ends in a voiceless 'sh', so '-ed' makes a /t/ sound!" },
+            
+            // /id/ - Rocket (t/d ed)
+            { w: "sounded", p1: "soun", h: "d", p2: "ed", ans: "/id/", mascotName: "Team Rocket", mascotImg: imgRocket, type: "hl-rocket text-purple-700", exp: "Correct! 'sound' ends in a 'd', so we use the /id/ sound!" },
+            { w: "hunted", p1: "hun", h: "t", p2: "ed", ans: "/id/", mascotName: "Team Rocket", mascotImg: imgRocket, type: "hl-rocket text-purple-700", exp: "Correct! 'hunt' ends in a 't', so we use the /id/ sound!" },
+            { w: "wanted", p1: "wan", h: "t", p2: "ed", ans: "/id/", mascotName: "Team Rocket", mascotImg: imgRocket, type: "hl-rocket text-purple-700", exp: "Correct! 'want' ends in a 't', so we use the /id/ sound!" },
+            { w: "needed", p1: "nee", h: "d", p2: "ed", ans: "/id/", mascotName: "Team Rocket", mascotImg: imgRocket, type: "hl-rocket text-purple-700", exp: "Correct! 'need' ends in a 'd', so we use the /id/ sound!" },
+            { w: "mended", p1: "men", h: "d", p2: "ed", ans: "/id/", mascotName: "Team Rocket", mascotImg: imgRocket, type: "hl-rocket text-purple-700", exp: "Correct! 'mend' ends in a 'd', so we use the /id/ sound!" },
+            
+            // /s/ - Meowth (Voiceless s)
+            { w: "laughs", p1: "lau", h: "gh", p2: "s", ans: "/s/", mascotName: "Meowth", mascotImg: imgMeowth, type: "hl-voiceless", exp: "Correct! 'laugh' ends in a voiceless 'f' sound (gh), so '-s' sounds like /s/!" },
+            { w: "flips", p1: "fli", h: "p", p2: "s", ans: "/s/", mascotName: "Meowth", mascotImg: imgMeowth, type: "hl-voiceless", exp: "Correct! 'flip' ends in a voiceless 'p', so '-s' sounds like /s/!" },
+            { w: "jumps", p1: "jum", h: "p", p2: "s", ans: "/s/", mascotName: "Meowth", mascotImg: imgMeowth, type: "hl-voiceless", exp: "Correct! 'jump' ends in a voiceless 'p', so '-s' sounds like /s/!" },
+            { w: "hits", p1: "hi", h: "t", p2: "s", ans: "/s/", mascotName: "Meowth", mascotImg: imgMeowth, type: "hl-voiceless", exp: "Correct! 'hit' ends in a voiceless 't', so '-s' sounds like /s/!" },
+            { w: "puffs", p1: "pu", h: "ff", p2: "s", ans: "/s/", mascotName: "Meowth", mascotImg: imgMeowth, type: "hl-voiceless", exp: "Correct! 'puff' ends in a voiceless 'f', so '-s' sounds like /s/!" },
+            
+            // /z/ - Pikachu (Voiced s)
+            { w: "spills", p1: "spi", h: "ll", p2: "s", ans: "/z/", mascotName: "Pikachu", mascotImg: imgPikachu, type: "hl-voiced", exp: "Correct! 'spill' ends in a voiced 'l', so '-s' sounds like /z/!" },
+            { w: "tickles", p1: "tickl", h: "e", p2: "s", ans: "/z/", mascotName: "Pikachu", mascotImg: imgPikachu, type: "hl-voiced", exp: "Correct! 'tickle' ends in a voiced vowel, so '-s' sounds like /z/!" },
+            { w: "dogs", p1: "do", h: "g", p2: "s", ans: "/z/", mascotName: "Pikachu", mascotImg: imgPikachu, type: "hl-voiced", exp: "Correct! 'dog' ends in a voiced 'g', so '-s' sounds like /z/!" },
+            { w: "runs", p1: "ru", h: "n", p2: "s", ans: "/z/", mascotName: "Pikachu", mascotImg: imgPikachu, type: "hl-voiced", exp: "Correct! 'run' ends in a voiced 'n', so '-s' sounds like /z/!" },
+            { w: "bugs", p1: "bu", h: "g", p2: "s", ans: "/z/", mascotName: "Pikachu", mascotImg: imgPikachu, type: "hl-voiced", exp: "Correct! 'bug' ends in a voiced 'g', so '-s' sounds like /z/!" },
+            
+            // /iz/ - Charizard (s/z/ch/sh/x/j s/es)
+            { w: "chases", p1: "cha", h: "se", p2: "s", ans: "/iz/", mascotName: "Charizard", mascotImg: imgCharizard, type: "hl-charizard text-orange-700", exp: "Correct! 'chase' ends in a hissing 's' sound, so it makes the /iz/ sound!" },
+            { w: "catches", p1: "ca", h: "tch", p2: "es", ans: "/iz/", mascotName: "Charizard", mascotImg: imgCharizard, type: "hl-charizard text-orange-700", exp: "Correct! 'catch' ends in a hissing 'ch' sound, so it makes the /iz/ sound!" },
+            { w: "kisses", p1: "ki", h: "ss", p2: "es", ans: "/iz/", mascotName: "Charizard", mascotImg: imgCharizard, type: "hl-charizard text-orange-700", exp: "Correct! 'kiss' ends in a hissing 's' sound, so it makes the /iz/ sound!" },
+            { w: "boxes", p1: "bo", h: "x", p2: "es", ans: "/iz/", mascotName: "Charizard", mascotImg: imgCharizard, type: "hl-charizard text-orange-700", exp: "Correct! 'box' ends in a hissing 'x' sound, so it makes the /iz/ sound!" },
+            { w: "watches", p1: "wa", h: "tch", p2: "es", ans: "/iz/", mascotName: "Charizard", mascotImg: imgCharizard, type: "hl-charizard text-orange-700", exp: "Correct! 'watch' ends in a hissing 'ch' sound, so it makes the /iz/ sound!" }
+        ];
+
+        // Game State Variables
+        let shuffledWords = [];
+        let currentIndex = 0;
+        let score = 0;
+
+        // Utility: Shuffle Array (Fisher-Yates)
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        // View Management
+        function hideAllViews() {
+            document.getElementById('tutorial-view').classList.add('hidden');
+            document.getElementById('game-view').classList.add('hidden');
+            document.getElementById('victory-view').classList.add('hidden');
+        }
+
+        function initTutorial() {
+            hideAllViews();
+            document.getElementById('tutorial-view').classList.remove('hidden');
+        }
+
+        function startGame() {
+            shuffledWords = shuffle([...wordData]);
+            currentIndex = 0;
+            score = 0;
+            updateScoreUI();
+            
+            hideAllViews();
+            document.getElementById('game-view').classList.remove('hidden');
+            renderQuestion();
+        }
+
+        function updateScoreUI() {
+            document.getElementById('score-counter').innerText = score;
+            document.getElementById('question-counter').innerText = currentIndex + 1;
+        }
+
+        function renderQuestion() {
+            // Setup word display (No highlight for the question phase)
+            const currentWord = shuffledWords[currentIndex];
+            const wordDisplay = document.getElementById('word-display');
+            
+            // Pop effect for new word
+            wordDisplay.style.transform = 'scale(0.8)';
+            wordDisplay.innerText = currentWord.w;
+            setTimeout(() => {
+                wordDisplay.style.transform = 'scale(1)';
+            }, 50);
+
+            // Hide overlay
+            document.getElementById('feedback-overlay').classList.add('hidden');
+            updateScoreUI();
+        }
+
+        function checkAnswer(selectedSound) {
+            const currentWord = shuffledWords[currentIndex];
+            const isCorrect = (selectedSound === currentWord.ans);
+            
+            if (isCorrect) score++;
+            
+            showFeedback(isCorrect, currentWord);
+        }
+
+        function showFeedback(isCorrect, wordObj) {
+            const overlay = document.getElementById('feedback-overlay');
+            const box = document.getElementById('feedback-box');
+            const icon = document.getElementById('fb-icon');
+            const title = document.getElementById('fb-title');
+            const wordDisplay = document.getElementById('fb-word-display');
+            const expText = document.getElementById('fb-explanation');
+
+            overlay.classList.remove('hidden');
+            
+            // Re-trigger animation
+            box.classList.remove('modal-animate');
+            void box.offsetWidth; // trigger reflow
+            box.classList.add('modal-animate');
+
+            // Setup Content
+            icon.src = wordObj.mascotImg;
+            icon.onerror = () => { if(wordObj.mascotName === "Team Rocket") icon.src = imgRocketFallback; };
+            
+            if (isCorrect) {
+                title.innerText = "Correct! 🎉";
+                title.className = "text-4xl font-black mb-4 text-emerald-600";
+                box.className = "modal-animate bg-white w-11/12 max-w-lg rounded-3xl shadow-2xl p-8 border-8 border-emerald-400 flex flex-col items-center text-center";
+                expText.innerHTML = `<strong>${wordObj.mascotName}</strong><br>${wordObj.exp}`;
+            } else {
+                title.innerText = "Not quite! 💪";
+                title.className = "text-4xl font-black mb-4 text-rose-500";
+                box.className = "modal-animate bg-white w-11/12 max-w-lg rounded-3xl shadow-2xl p-8 border-8 border-rose-400 flex flex-col items-center text-center";
+                expText.innerHTML = `<strong>Try again next time!</strong><br>The correct answer is <strong>${wordObj.ans}</strong>.<br>${wordObj.exp}`;
+            }
+
+            // Render highlighted word based on word object
+            wordDisplay.innerHTML = `${wordObj.p1}<span class="${wordObj.type}">${wordObj.h}</span>${wordObj.p2}`;
+        }
+
+        function nextQuestion() {
+            currentIndex++;
+            if (currentIndex >= shuffledWords.length) {
+                showVictory();
+            } else {
+                renderQuestion();
+            }
+        }
+
+        function showVictory() {
+            hideAllViews();
+            document.getElementById('victory-view').classList.remove('hidden');
+            document.getElementById('final-score').innerText = score;
+        }
+
+        // Initialize App on load
+        window.onload = () => {
+            initTutorial();
+            
+            // Fix for iOS touch active states
+            document.addEventListener("touchstart", function(){}, {passive: true});
+        };
+    </script>
+</body>
+</html>
