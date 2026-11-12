@@ -298,11 +298,11 @@
         let frameCount = 0;
         let lastFired = 0;
 
-        // Tuned Speeds (Slower for children to read and react)
-        let playerSpeed = 3.5; 
-        let bulletSpeed = 5;
-        let blockFallSpeedBase = 0.35;
-        let fireRate = 25; // Frames between shots
+        // Tuned Speeds (Slower and strictly CONSTANT for children to read and react)
+        const playerSpeed = 3.5; 
+        const bulletSpeed = 5;
+        const blockFallSpeed = 0.4; // Fixed constant speed
+        const fireRate = 25; // Frames between shots
 
         // Entities
         let player = { x: 0, y: 0, width: 50, height: 60, isFiring: false };
@@ -548,8 +548,8 @@
                     height: 90,
                     text: ans.text,
                     isCorrect: ans.isCorrect,
-                    // Speed capped lower for children
-                    speed: Math.min(0.8, blockFallSpeedBase + (score * 0.005)) 
+                    // Speed is now strictly constant
+                    speed: blockFallSpeed 
                 });
             });
         }
