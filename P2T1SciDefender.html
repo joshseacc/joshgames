@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Science Defender: Starlight Edition</title>
+    <title>Science Defender: Chapter Select Edition</title>
     <style>
         body, html {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(to bottom, #090a0f, #1a0b2e);
-            color: #e0f7fa;
-            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #050510;
+            color: #00ffcc;
+            font-family: 'Arial', sans-serif;
             overflow: hidden;
             touch-action: none;
         }
@@ -30,148 +30,125 @@
             text-align: center;
             z-index: 50;
         }
-        /* Glassmorphism Menus */
-        .glass-panel {
+        #main-menu {
             pointer-events: auto;
-            background: rgba(15, 20, 40, 0.55);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(0, 229, 255, 0.4);
+            background: rgba(0, 0, 0, 0.95);
+            padding: 25px;
+            border: 3px solid #00ffcc;
             border-radius: 20px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.7);
-            padding: 30px;
-            max-width: 90%;
-            max-height: 85vh;
+            box-shadow: 0 0 25px #00ffcc;
+            width: 85%;
+            max-width: 450px;
+            max-height: 90%;
             overflow-y: auto;
         }
         h1 {
-            color: #ffffff;
-            text-shadow: 0 0 10px #00e5ff, 0 0 20px #00e5ff;
+            color: #00ffcc;
+            text-shadow: 2px 2px 0px #ff00ff;
             margin-top: 0;
-            font-size: 28px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-        .subtitle {
-            font-size: 14px;
-            color: #b2ebf2;
-            margin-bottom: 20px;
-            letter-spacing: 1px;
+            font-size: 30px;
+            margin-bottom: 10px;
         }
         .menu-btn {
             display: block;
             width: 100%;
-            padding: 14px;
-            margin: 12px 0;
-            font-size: 16px;
+            padding: 12px;
+            margin: 10px 0;
+            font-size: 18px;
             font-weight: bold;
-            background: rgba(0, 229, 255, 0.1);
-            color: #00e5ff;
-            border: 1px solid #00e5ff;
-            border-radius: 10px;
+            background-color: #000;
+            color: #ff00ff;
+            border: 3px solid #ff00ff;
+            border-radius: 12px;
             cursor: pointer;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s ease;
-            box-shadow: inset 0 0 10px rgba(0, 229, 255, 0);
         }
-        .menu-btn:hover, .menu-btn:active {
-            background: rgba(0, 229, 255, 0.3);
-            color: #ffffff;
-            box-shadow: 0 0 15px rgba(0, 229, 255, 0.6), inset 0 0 10px rgba(0, 229, 255, 0.4);
+        .menu-btn:active {
+            background-color: #ff00ff;
+            color: #000;
         }
         .mixed-btn {
-            background: rgba(255, 0, 255, 0.1);
-            border-color: #ff00ff;
-            color: #ff00ff;
+            background-color: #ff00ff;
+            color: #000;
+            border-color: #00ffcc;
         }
-        .mixed-btn:hover, .mixed-btn:active {
-            background: rgba(255, 0, 255, 0.3);
-            color: #ffffff;
-            box-shadow: 0 0 15px rgba(255, 0, 255, 0.6), inset 0 0 10px rgba(255, 0, 255, 0.4);
-        }
-        /* Glassmorphism HUD & Question Display */
-        #hud {
+        
+        #top-bar {
             position: absolute;
-            top: 15px;
-            left: 15px;
-            right: 15px;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 130px;
+            background-color: rgba(5, 5, 20, 1);
+            border-bottom: 4px solid #00ffcc;
             display: none;
+            flex-direction: column;
+            align-items: center;
+            z-index: 30;
+            box-shadow: 0 5px 15px rgba(0,255,204,0.3);
+        }
+        #hud {
+            width: 90%;
+            display: flex;
             justify-content: space-between;
             font-size: 20px;
             font-weight: bold;
-            background: rgba(10, 15, 30, 0.4);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(0, 229, 255, 0.3);
-            border-radius: 12px;
-            padding: 12px 20px;
-            z-index: 10;
+            padding-top: 10px;
             color: #fff;
-            text-shadow: 0 0 5px #00e5ff;
         }
         #question-display {
-            position: absolute;
-            top: 80px;
-            width: 90%;
-            left: 5%;
+            width: 95%;
             text-align: center;
-            font-size: 18px;
-            font-weight: 600;
-            background: rgba(10, 15, 30, 0.5);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(0, 229, 255, 0.6);
-            border-radius: 12px;
-            padding: 15px;
-            display: none;
-            z-index: 10;
-            box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
-            color: #ffffff;
-            letter-spacing: 0.5px;
+            font-size: 22px;
+            font-weight: bold;
+            color: #00ffcc;
+            margin-top: 15px;
         }
-        /* Mobile Controls */
+        
+        #feedback-msg {
+            position: absolute;
+            top: 40%;
+            width: 100%;
+            text-align: center;
+            font-size: 45px;
+            font-weight: bold;
+            color: #00ff00;
+            text-shadow: 0px 0px 15px #00ff00;
+            display: none;
+            z-index: 40;
+        }
+
         #mobile-controls {
             position: absolute;
-            bottom: 30px;
+            bottom: 20px;
             left: 0;
             width: 100%;
             display: none;
             justify-content: space-around;
-            padding: 0 15px;
+            padding: 0 10px;
             box-sizing: border-box;
             pointer-events: auto;
             z-index: 20;
         }
         .ctrl-btn {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(5px);
-            border: 2px solid rgba(0, 229, 255, 0.5);
+            background: rgba(0, 255, 255, 0.15);
+            border: 2px solid #00ffff;
             color: #fff;
-            font-size: 26px;
-            padding: 15px 35px;
-            border-radius: 15px;
+            font-size: 35px;
+            padding: 15px 30px;
+            border-radius: 12px;
             user-select: none;
             touch-action: none;
-            transition: background 0.1s;
-        }
-        .ctrl-btn:active {
-            background: rgba(0, 229, 255, 0.3);
-            border-color: #00e5ff;
-            box-shadow: 0 0 15px rgba(0, 229, 255, 0.5);
+            flex: 1;
+            margin: 0 10px;
         }
         .fire-btn {
-            border-color: rgba(255, 0, 255, 0.5);
-        }
-        .fire-btn:active {
-            background: rgba(255, 0, 255, 0.3);
             border-color: #ff00ff;
-            box-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
+            background: rgba(255, 0, 255, 0.15);
+            flex: 1.5;
         }
         canvas {
             display: block;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1;
         }
     </style>
 </head>
@@ -180,33 +157,36 @@
     <canvas id="gameCanvas"></canvas>
 
     <div id="ui-layer">
-        <div id="main-menu" class="glass-panel">
+        <div id="main-menu">
             <h1>Science Defender</h1>
-            <div class="subtitle">Starlight Edition • 44 Questions</div>
+            <p style="font-size:16px; color:#fff; margin-bottom: 15px;">Select a chapter to train!</p>
             <button class="menu-btn" onclick="startGame(1)">Ch 1: Living Things</button>
             <button class="menu-btn" onclick="startGame(2)">Ch 2: Animals</button>
             <button class="menu-btn" onclick="startGame(3)">Ch 3: Plants</button>
-            <button class="menu-btn" onclick="startGame(4)">Ch 4: Environment</button>
-            <button class="menu-btn mixed-btn" onclick="startGame('mixed')">🔥 MIXED MODE (ALL 44 Qs) 🔥</button>
+            <button class="menu-btn" onclick="startGame(4)">Ch 4: Environment (Focus!)</button>
+            <button class="menu-btn mixed-btn" onclick="startGame('mixed')">MIXED MODE (ALL)</button>
         </div>
 
-        <div id="game-over" class="glass-panel" style="display: none; border-color: rgba(255, 51, 102, 0.6);">
-            <h1 style="color: #ff3366; text-shadow: 0 0 15px #ff3366;">Mission Failed</h1>
-            <h2 id="final-score" style="margin: 20px 0;">Score: 0</h2>
-            <button class="menu-btn" onclick="returnToMenu()">Return to Base</button>
+        <div id="game-over" style="display: none; pointer-events: auto; background: rgba(0,0,0,0.95); padding: 30px; border: 3px solid #ff0000; border-radius: 15px; width: 85%; max-width: 400px;">
+            <h1 style="color: #ff0000;">Game Over</h1>
+            <h2 id="final-score" style="color: #fff; font-size: 26px;">Score: 0</h2>
+            <button class="menu-btn" style="border-color: #00ffcc; color: #00ffcc;" onclick="returnToMenu()">Menu</button>
         </div>
     </div>
 
-    <div id="hud">
-        <span id="score-display">Score: 0</span>
-        <span id="lives-display">Lives: 3</span>
+    <div id="top-bar">
+        <div id="hud">
+            <span id="score-display">Score: 0</span>
+            <span id="lives-display">Lives: 3</span>
+        </div>
+        <div id="question-display">Question goes here</div>
     </div>
-    <div id="question-display">Question text goes here</div>
 
-    <!-- On-screen Controls -->
+    <div id="feedback-msg">CORRECT!</div>
+
     <div id="mobile-controls">
         <button class="ctrl-btn" id="btn-left">⬅️</button>
-        <button class="ctrl-btn fire-btn" id="btn-fire">🔥</button>
+        <button class="ctrl-btn fire-btn" id="btn-fire">🔥 FIRE</button>
         <button class="ctrl-btn" id="btn-right">➡️</button>
     </div>
 
@@ -215,286 +195,131 @@
         const ctx = canvas.getContext('2d');
         const mainMenu = document.getElementById('main-menu');
         const gameOverScreen = document.getElementById('game-over');
-        const hud = document.getElementById('hud');
+        const topBar = document.getElementById('top-bar');
         const questionDisplay = document.getElementById('question-display');
         const scoreDisplay = document.getElementById('score-display');
         const livesDisplay = document.getElementById('lives-display');
         const finalScoreDisplay = document.getElementById('final-score');
         const mobileControls = document.getElementById('mobile-controls');
+        const feedbackMsg = document.getElementById('feedback-msg');
 
         function resize() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            initStars();
         }
         window.addEventListener('resize', resize);
+        resize();
 
-        // --- Exact Question Database provided by User ---
+        // 重新分課的題庫，並確保 U4 (Environment) 有最多、最詳細的題目
         const questionsDB = {
             1: [
-                { q: "What are the 3 main characteristics of living things?", a: "Grow, reproduce, respond to stimuli", wrongs: ["Move, eat, sleep", "Make sounds, run, jump"] },
-                { q: "Are animals and plants living or non-living?", a: "Living things", wrongs: ["Non-living things", "Man-made objects"] },
-                { q: "Why is a robot dog a non-living thing?", a: "Cannot grow or reproduce", wrongs: ["Cannot move or make sounds", "Does not need sleep"] },
-                { q: "Is a dinosaur fossil a living thing?", a: "No, it is non-living", wrongs: ["Yes, it has life", "Yes, it can grow"] },
-                { q: "Are unsprouted seeds living or non-living?", a: "Living (they have life)", wrongs: ["Non-living (lifeless)", "Man-made objects"] },
-                { q: "What is the main difference between living & non-living?", a: "Living things have life", wrongs: ["Non-living things have life", "Living things cannot move"] },
-                { q: "Are spring riders and signposts living things?", a: "No, they are lifeless", wrongs: ["Yes, they can move", "Yes, they can grow"] },
-                { q: "What kind of things can respond to stimuli?", a: "Living things", wrongs: ["Non-living things", "Man-made objects"] },
-                { q: "Can non-living things reproduce?", a: "No, they cannot", wrongs: ["Yes, they can", "Only in the ocean"] },
-                { q: "Why is a dog living but a robot dog isn't?", a: "Real dogs grow and reproduce", wrongs: ["Robot dogs grow faster", "Robot dogs need food"] }
+                { q: "What can living things do?", a: "Grow and reproduce", wrongs: ["Only move around", "Live forever"] },
+                { q: "Are animals and plants living or non-living?", a: "Living things", wrongs: ["Non-living things", "Lifeless objects"] },
+                { q: "Why is a robot dog a non-living thing?", a: "It cannot grow", wrongs: ["It cannot move", "It has life"] },
+                { q: "Is a dinosaur fossil a living thing?", a: "No, it is lifeless", wrongs: ["Yes, it can grow", "Yes, it reproduces"] },
+                { q: "Which one is a living thing?", a: "A dormant seed", wrongs: ["A falling rock", "A signpost"] },
+                { q: "What is a main characteristic of living things?", a: "Respond to stimuli", wrongs: ["Never change", "Stay lifeless"] }
             ],
             2: [
-                { q: "Why do animals need to eat?", a: "Get energy for life processes", wrongs: ["To sleep better", "To become non-living"] },
-                { q: "What happens if an animal skips meals?", a: "Feels hungry, weak, tired", wrongs: ["Grows much faster", "Gets more energy"] },
-                { q: "What is the main food for bees?", a: "Nectar", wrongs: ["Grass", "Meat"] },
-                { q: "What does an anteater eat?", a: "Ants", wrongs: ["Leaves", "Nuts"] },
-                { q: "What does a squirrel mainly eat?", a: "Nuts", wrongs: ["Meat", "Nectar"] },
-                { q: "What do lions and tigers eat?", a: "Meat", wrongs: ["Grass", "Nuts"] },
-                { q: "What do cows and sheep eat?", a: "Grass", wrongs: ["Meat", "Nectar"] },
-                { q: "Why do tigers lack meat in forests?", a: "Trees cut down, habitats destroyed", wrongs: ["They eat too much grass", "The climate is too cold"] },
-                { q: "How does a goldfish respond to stirred water?", a: "Swims away quickly", wrongs: ["Hides in a shell", "Fights back"] },
-                { q: "How do dogs respond when meeting?", a: "Sniff, wag tails, bark", wrongs: ["Spray ink", "Camouflage"] },
-                { q: "How does a tortoise protect itself?", a: "Hides in its shell", wrongs: ["Runs away quickly", "Sprays poison"] },
-                { q: "How does a gecko protect itself?", a: "Hides and camouflages", wrongs: ["Stings the enemy", "Inflates like a balloon"] },
-                { q: "How does a wasp respond to danger?", a: "Fights back / Stings", wrongs: ["Hides in a shell", "Swims away"] },
-                { q: "How does a zebra respond to danger?", a: "Runs away", wrongs: ["Sprays ink", "Hides in a shell"] }
+                { q: "Why do animals need to eat food?", a: "To get energy", wrongs: ["To sleep better", "To change habitat"] },
+                { q: "What happens if an animal skips meals?", a: "Feels weak and tired", wrongs: ["Gets more energy", "Grows faster"] },
+                { q: "What does a honeybee mainly eat?", a: "Nectar from flowers", wrongs: ["Grass and leaves", "Small insects"] },
+                { q: "What does an anteater mainly eat?", a: "Ants", wrongs: ["Meat", "Nectar"] },
+                { q: "What does a squirrel mainly eat?", a: "Nuts", wrongs: ["Grass", "Meat"] },
+                { q: "What does a lion mainly eat?", a: "Meat", wrongs: ["Grass", "Nectar"] },
+                { q: "How does a snail protect itself?", a: "Hides in its shell", wrongs: ["Sprays dark ink", "Stings the enemy"] },
+                { q: "How does a cuttlefish respond to danger?", a: "Sprays dark ink", wrongs: ["Hides in a shell", "Runs on land"] },
+                { q: "How does a zebra protect itself?", a: "Runs away", wrongs: ["Hides in a shell", "Sprays ink"] },
+                { q: "How does a wasp protect itself?", a: "Fights back / stings", wrongs: ["Hides in a shell", "Sprays ink"] },
+                { q: "Why are tigers in forests losing their food?", a: "Forests are cut down", wrongs: ["They eat too much", "They don't like meat"] },
+                { q: "What should you do if bees fly around you?", a: "Stay calm", wrongs: ["Wave hands", "Shout loudly"] }
             ],
             3: [
-                { q: "What basic needs do plants require?", a: "Sunlight, air, and water", wrongs: ["Meat, grass, and nectar", "Soil, rocks, and fossils"] },
-                { q: "What happens if a plant loses all its leaves?", a: "It will eventually die", wrongs: ["It will grow faster", "It will run away"] },
-                { q: "Which part of a plant grows first?", a: "The root", wrongs: ["The stem", "The flower"] },
-                { q: "What is the function of roots?", a: "Absorb water & anchor plant", wrongs: ["Make food from sunlight", "Transport liquids to leaves"] },
-                { q: "What is the function of a plant's stem?", a: "Supports plant & transports nutrients", wrongs: ["Absorbs sunlight", "Anchors into the soil"] },
-                { q: "What does celery in colored water prove?", a: "Stem transports liquids", wrongs: ["Roots make food", "Leaves anchor the plant"] },
-                { q: "What is the function of leaves?", a: "Absorb sunlight to make food", wrongs: ["Anchor the plant firmly", "Transport water"] },
-                { q: "How do large leaves help a plant?", a: "Absorb enough sunlight", wrongs: ["Hide from danger", "Absorb more water from soil"] },
-                { q: "Why leave fallen leaves on the soil?", a: "Decay and release nutrients", wrongs: ["They look beautiful", "They stop weeds from growing"] },
-                { q: "How do mung bean seedlings respond to light?", a: "Grow towards sunlight", wrongs: ["Grow away from light", "Close their leaves"] },
-                { q: "How do sunflowers respond to the environment?", a: "Turn heads to face the sun", wrongs: ["Hide from the rain", "Drop their seeds"] }
+                { q: "What basic needs do plants require?", a: "Sunlight, air, water", wrongs: ["Meat, grass, nectar", "Bleach, detergent"] },
+                { q: "Which part of a plant grows first?", a: "The root", wrongs: ["The stem", "The leaf"] },
+                { q: "What is the main function of a plant's root?", a: "Anchors the plant", wrongs: ["Makes food", "Absorbs sunlight"] },
+                { q: "What else does the root do?", a: "Absorbs water from soil", wrongs: ["Makes food", "Transports food"] },
+                { q: "What is the function of a plant's stem?", a: "Transports water", wrongs: ["Anchors the plant", "Absorbs sunlight"] },
+                { q: "What else does the stem do?", a: "Supports the plant", wrongs: ["Makes food", "Absorbs water from soil"] },
+                { q: "What is the function of leaves?", a: "Absorbs sunlight to make food", wrongs: ["Absorbs water", "Transports nutrients"] },
+                { q: "What happens if all leaves are cut off?", a: "The plant will die", wrongs: ["It grows faster", "Roots will make food"] },
+                { q: "How do seedlings respond to light?", a: "Grow towards sunlight", wrongs: ["Grow away from light", "Hide in the soil"] },
+                { q: "Why shouldn't we pick fallen leaves?", a: "They decay into nutrients", wrongs: ["They grow into new trees", "They absorb sunlight"] }
             ],
             4: [
-                { q: "What does clean water look like?", a: "Clear and has no smell", wrongs: ["Dirty and smelly", "Grey and thick"] },
-                { q: "What does polluted water look like?", a: "Dirty and often smelly", wrongs: ["Clear and no smell", "Bright blue and fresh"] },
-                { q: "Household sources of water pollution?", a: "Bleach, grease, detergent", wrongs: ["Fallen leaves, roots", "Sunlight, air, fresh water"] },
-                { q: "How does leaked ship fuel affect seabirds?", a: "Oil covers them, hard to fly", wrongs: ["Gives them energy", "Makes feathers stronger"] },
-                { q: "Health effects of polluted water?", a: "Stomach aches & intestinal diseases", wrongs: ["Coughing & breathing difficulties", "Blurred vision"] },
-                { q: "Indoor sources of air pollution?", a: "Smoking, painting, cooking smoke", wrongs: ["Factories, vehicles, hill fires", "Bleach, grease, detergent"] },
-                { q: "Outdoor sources of air pollution?", a: "Factories, vehicles, hill fires", wrongs: ["Smoking, painting", "Old fishing nets"] },
-                { q: "How does air pollution affect plants?", a: "Dust blocks sunlight, stops growth", wrongs: ["Smells cover flower scents", "Roots cannot anchor"] },
-                { q: "How does air pollution affect bees?", a: "Strong smells hide flower scents", wrongs: ["Dust covers their wings", "They lose forest habitats"] },
-                { q: "How does severe air pollution affect drivers?", a: "Grey skies blur vision", wrongs: ["Makes roads slippery", "Causes engines to break down"] },
-                { q: "When AQHI is 'Serious' (10+), who stays indoors?", a: "Elderly, children, patients", wrongs: ["Drivers, workers", "Only animals"] },
-                { q: "Good daily habit to reduce pollution?", a: "Walk, use public transport", wrongs: ["Pour oil down the sink", "Leave barbecue fires burning"] },
-                { q: "Why reduce and recycle plastic bottles?", a: "Making plastic releases harmful gases", wrongs: ["They block sunlight from plants", "They cause stomach aches"] }
+                // U4 是最豐富的一課 (19 條題目)
+                { q: "What does polluted water look like?", a: "Dirty and smelly", wrongs: ["Clear and no smell", "Freezing cold"] },
+                { q: "What does clean water look like?", a: "Clear and no smell", wrongs: ["Dirty and smelly", "Grey and oily"] },
+                { q: "Which items cause household water pollution?", a: "Detergent and bleach", wrongs: ["Fallen leaves", "Fresh rainwater"] },
+                { q: "What else causes household water pollution?", a: "Grease and shampoo", wrongs: ["Sunlight and air", "Nectar and nuts"] },
+                { q: "How does leaked fuel affect seabirds?", a: "Oil covers feathers", wrongs: ["Gives them energy", "Makes them fly faster"] },
+                { q: "What health problem does polluted water cause?", a: "Intestinal diseases", wrongs: ["Coughing", "Blurred vision"] },
+                { q: "What happens if rubbish blocks rivers?", a: "It affects ecology", wrongs: ["It makes water cleaner", "It gives fish food"] },
+                { q: "What happens if waste water is poured into stormwater drains?", a: "Pollutes natural water", wrongs: ["Cleans the river", "Helps plants grow"] },
+                { q: "What is a source of INDOOR air pollution?", a: "Smoking and cooking", wrongs: ["Factories and vehicles", "Hill fires"] },
+                { q: "What is a source of OUTDOOR air pollution?", a: "Factories and vehicles", wrongs: ["Smoking indoors", "Bleach and shampoo"] },
+                { q: "How does air pollution affect plants?", a: "Dust blocks sunlight", wrongs: ["Smells cover flower scent", "Helps make food"] },
+                { q: "How does air pollution affect bees?", a: "Smells hide nectar scent", wrongs: ["Dust covers wings", "Makes them angry"] },
+                { q: "How does grey sky affect drivers?", a: "Blurs vision", wrongs: ["Makes roads slippery", "Cars run out of fuel"] },
+                { q: "What respiratory problems does air pollution cause?", a: "Coughing & breathing issues", wrongs: ["Intestinal diseases", "Stomach aches"] },
+                { q: "When AQHI is 10+, who should stay indoors?", a: "Elderly and children", wrongs: ["Drivers and workers", "Only pets"] },
+                { q: "What is a good habit to reduce air pollution?", a: "Walk for short distances", wrongs: ["Leave barbecue fires burning", "Smoke more"] },
+                { q: "What is a good habit to reduce water pollution?", a: "Use eco-friendly detergent", wrongs: ["Pour oil down the sink", "Dump plastic in ocean"] },
+                { q: "Why should we reduce plastic bottles?", a: "Making plastic releases bad gas", wrongs: ["They block sunlight", "They make the sky grey"] },
+                { q: "Where should we put plastic bottles?", a: "Recycling bins", wrongs: ["Stormwater drains", "The ocean"] }
             ]
         };
 
-        // Game State Variables
         let isPlaying = false;
+        let isTransitioning = false; 
         let score = 0;
         let lives = 3;
         let currentLevelPool = [];
         let currentQuestion = null;
+        let currentMode = null;
+        
+        let playerSpeed = 7;
+        let bulletSpeed = 10;
+        let blockFallSpeed = 0.8; // 絕對恆定慢速
+        let fireRate = 18; 
         let frameCount = 0;
-        let lastFired = 0;
 
-        // Tuned Speeds (Slower and strictly CONSTANT for children to read and react)
-        const playerSpeed = 3.5; 
-        const bulletSpeed = 5;
-        const blockFallSpeed = 0.4; // Fixed constant speed
-        const fireRate = 25; // Frames between shots
-
-        // Entities
-        let player = { x: 0, y: 0, width: 50, height: 60, isFiring: false };
+        let player = { x: 0, y: 0, width: 50, height: 50, isFiring: false };
         let bullets = [];
         let blocks = [];
         let particles = [];
-        let stars = [];
 
-        // Input Setup
         let keys = {};
         window.addEventListener('keydown', e => keys[e.key] = true);
         window.addEventListener('keyup', e => keys[e.key] = false);
 
         const bindButton = (id, keyName) => {
             const btn = document.getElementById(id);
-            btn.addEventListener('touchstart', e => { e.preventDefault(); keys[keyName] = true; });
-            btn.addEventListener('touchend', e => { e.preventDefault(); keys[keyName] = false; });
-            btn.addEventListener('mousedown', e => { e.preventDefault(); keys[keyName] = true; });
-            btn.addEventListener('mouseup', e => { e.preventDefault(); keys[keyName] = false; });
-            btn.addEventListener('mouseleave', e => { e.preventDefault(); keys[keyName] = false; });
+            const press = (e) => { e.preventDefault(); keys[keyName] = true; };
+            const release = (e) => { e.preventDefault(); keys[keyName] = false; };
+            btn.addEventListener('touchstart', press);
+            btn.addEventListener('touchend', release);
+            btn.addEventListener('mousedown', press);
+            btn.addEventListener('mouseup', release);
+            btn.addEventListener('mouseleave', release);
         };
         bindButton('btn-left', 'ArrowLeft');
         bindButton('btn-right', 'ArrowRight');
         bindButton('btn-fire', ' '); 
 
-        function initStars() {
-            stars = [];
-            for(let i=0; i<100; i++) {
-                stars.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    radius: Math.random() * 1.5 + 0.5,
-                    speed: (Math.random() * 0.5) + 0.1,
-                    alpha: Math.random()
-                });
-            }
-        }
-
-        function drawStars() {
-            ctx.fillStyle = 'rgba(9, 10, 15, 0.4)'; // Clear trailing effect
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            stars.forEach(s => {
-                s.y += s.speed;
-                if(s.y > canvas.height) {
-                    s.y = 0;
-                    s.x = Math.random() * canvas.width;
-                }
-                ctx.globalAlpha = s.alpha;
-                ctx.beginPath();
-                ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
-                ctx.fillStyle = '#ffffff';
-                ctx.fill();
-            });
-            ctx.globalAlpha = 1.0;
-        }
-
-        function drawShip(x, y, w, h) {
-            ctx.save();
-            ctx.translate(x, y);
-
-            // Glowing Thruster Animation
-            let thrustIntensity = (Math.sin(frameCount * 0.4) + 1) / 2; // 0 to 1
-            let thrustY = h + 10 + (thrustIntensity * 15);
-            
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = '#00e5ff';
-            ctx.fillStyle = '#00e5ff';
-            ctx.beginPath();
-            ctx.moveTo(w * 0.35, h * 0.85);
-            ctx.lineTo(w * 0.5, thrustY);
-            ctx.lineTo(w * 0.65, h * 0.85);
-            ctx.fill();
-
-            // Ship Body (Modern Sleek Shape)
-            ctx.shadowBlur = 5;
-            ctx.shadowColor = '#000000';
-            
-            let grad = ctx.createLinearGradient(0, 0, 0, h);
-            grad.addColorStop(0, '#e0e0e0');
-            grad.addColorStop(0.4, '#a0a0a0');
-            grad.addColorStop(1, '#404040');
-            
-            ctx.fillStyle = grad;
-            ctx.beginPath();
-            ctx.moveTo(w * 0.5, 0); // Nose
-            ctx.lineTo(w * 0.9, h * 0.6); // Right Outer Wing
-            ctx.lineTo(w * 0.8, h * 0.9); // Right Inner Wing
-            ctx.lineTo(w * 0.5, h * 0.75); // Center Bottom
-            ctx.lineTo(w * 0.2, h * 0.9); // Left Inner Wing
-            ctx.lineTo(w * 0.1, h * 0.6); // Left Outer Wing
-            ctx.closePath();
-            ctx.fill();
-
-            // Wing Accents
-            ctx.fillStyle = '#ff0055';
-            ctx.beginPath();
-            ctx.moveTo(w * 0.15, h * 0.65);
-            ctx.lineTo(w * 0.25, h * 0.8);
-            ctx.lineTo(w * 0.1, h * 0.8);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.moveTo(w * 0.85, h * 0.65);
-            ctx.lineTo(w * 0.75, h * 0.8);
-            ctx.lineTo(w * 0.9, h * 0.8);
-            ctx.fill();
-
-            // Cockpit
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = '#00e5ff';
-            ctx.fillStyle = 'rgba(0, 229, 255, 0.8)';
-            ctx.beginPath();
-            ctx.ellipse(w * 0.5, h * 0.45, w * 0.12, h * 0.25, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.restore();
-        }
-
-        // Draw rounded rectangle with glow
-        function drawGlowingBlock(x, y, w, h, text) {
-            ctx.save();
-            // Glassmorphism background
-            ctx.fillStyle = 'rgba(10, 15, 30, 0.7)';
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = '#00e5ff'; // Uniform color to hide identity
-            ctx.strokeStyle = '#00e5ff';
-            ctx.lineWidth = 2;
-
-            ctx.beginPath();
-            ctx.roundRect(x, y, w, h, 10);
-            ctx.fill();
-            ctx.stroke();
-
-            // Text
-            ctx.shadowBlur = 0;
-            ctx.fillStyle = '#ffffff';
-            ctx.font = '14px "Segoe UI", Arial, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            
-            let words = text.split(' ');
-            let line = '';
-            let yOffset = y + (h/2) - 10; // start slightly above center
-            
-            // Simple Word Wrap
-            let lines = [];
-            for(let n = 0; n < words.length; n++) {
-                let testLine = line + words[n] + ' ';
-                let metrics = ctx.measureText(testLine);
-                if (metrics.width > w - 10 && n > 0) {
-                    lines.push(line);
-                    line = words[n] + ' ';
-                } else {
-                    line = testLine;
-                }
-            }
-            lines.push(line);
-            
-            // Adjust starting y based on number of lines
-            yOffset -= ((lines.length - 1) * 9); 
-            for(let i=0; i<lines.length; i++) {
-                ctx.fillText(lines[i], x + w/2, yOffset + (i*18));
-            }
-            ctx.restore();
-        }
-
-        function createExplosion(x, y, isCorrect) {
-            const color = isCorrect ? '#00ffaa' : '#ff3366'; // Vibrant Green vs Vibrant Red
-            for (let i = 0; i < 25; i++) {
-                particles.push({
-                    x: x, y: y,
-                    vx: (Math.random() - 0.5) * 8,
-                    vy: (Math.random() - 0.5) * 8,
-                    life: 1.0,
-                    color: color,
-                    size: Math.random() * 4 + 2
-                });
-            }
-        }
-
         function startGame(mode) {
-            resize();
+            currentMode = mode;
             score = 0;
             lives = 3;
             bullets = [];
             blocks = [];
             particles = [];
             
+            // 根據所選按鈕準備題庫
             currentLevelPool = [];
             if (mode === 'mixed') {
                 for (let i = 1; i <= 4; i++) {
-                    currentLevelPool = currentLevelPool.concat(questionsDB[i]);
+                    currentLevelPool = currentLevelPool.concat([...questionsDB[i]]);
                 }
             } else {
                 currentLevelPool = [...questionsDB[mode]];
@@ -505,53 +330,60 @@
             
             mainMenu.style.display = 'none';
             gameOverScreen.style.display = 'none';
-            hud.style.display = 'flex';
-            questionDisplay.style.display = 'block';
+            topBar.style.display = 'flex';
             mobileControls.style.display = 'flex';
             
             updateHUD();
+            isTransitioning = false;
             loadNextQuestion();
             isPlaying = true;
-            requestAnimationFrame(gameLoop);
+            gameLoop();
         }
 
         function returnToMenu() {
             gameOverScreen.style.display = 'none';
             mobileControls.style.display = 'none';
+            topBar.style.display = 'none';
             mainMenu.style.display = 'block';
         }
 
         function loadNextQuestion() {
             if (currentLevelPool.length === 0) {
-                startGame('mixed'); 
-                return;
+                // 如果題目玩晒，自動重置題庫繼續玩
+                if (currentMode === 'mixed') {
+                    for (let i = 1; i <= 4; i++) {
+                        currentLevelPool = currentLevelPool.concat([...questionsDB[i]]);
+                    }
+                } else {
+                    currentLevelPool = [...questionsDB[currentMode]];
+                }
             }
             const qIndex = Math.floor(Math.random() * currentLevelPool.length);
             currentQuestion = currentLevelPool.splice(qIndex, 1)[0]; 
             questionDisplay.innerText = currentQuestion.q;
 
             let answers = [{ text: currentQuestion.a, isCorrect: true }];
-            currentQuestion.wrongs.forEach(w => answers.push({ text: w, isCorrect: false }));
+            let shuffledWrongs = [...currentQuestion.wrongs].sort(() => Math.random() - 0.5);
+            answers.push({ text: shuffledWrongs[0], isCorrect: false });
+            answers.push({ text: shuffledWrongs[1], isCorrect: false });
             answers.sort(() => Math.random() - 0.5); 
 
             blocks = [];
-            // Narrow blocks for easier dodging (Max 30% of screen width)
-            const blockWidth = Math.min(200, (canvas.width * 0.3) - 10);
             const spacing = canvas.width / 3;
+            const blockWidth = spacing * 0.9; 
             
-            // Spawn 3 blocks side by side
             answers.forEach((ans, index) => {
                 blocks.push({
-                    x: (index * spacing) + (spacing/2) - (blockWidth/2),
-                    y: -120 - (Math.random() * 30), // slightly staggered start
+                    x: (index * spacing) + (spacing - blockWidth) / 2,
+                    y: 130, // 從擋板正下方開始
                     width: blockWidth,
-                    height: 90,
+                    height: 100, 
                     text: ans.text,
-                    isCorrect: ans.isCorrect,
-                    // Speed is now strictly constant
-                    speed: blockFallSpeed 
+                    isCorrect: ans.isCorrect
                 });
             });
+            
+            isTransitioning = false;
         }
 
         function updateHUD() {
@@ -559,131 +391,169 @@
             livesDisplay.innerText = `Lives: ${lives}`;
         }
 
+        function handleCorrectAnswer() {
+            isTransitioning = true;
+            score += 10;
+            updateHUD();
+            
+            // 瞬間清空畫面上所有子彈和方塊，防走火
+            bullets = [];
+            blocks = [];
+            
+            feedbackMsg.style.display = 'block';
+            
+            // 停頓 1.5 秒讓小朋友吸收成功感
+            setTimeout(() => {
+                feedbackMsg.style.display = 'none';
+                loadNextQuestion();
+            }, 1500);
+        }
+
+        function createExplosion(x, y, color) {
+            for (let i = 0; i < 20; i++) {
+                particles.push({
+                    x: x, y: y,
+                    vx: (Math.random() - 0.5) * 12,
+                    vy: (Math.random() - 0.5) * 12,
+                    life: 1.0,
+                    color: color
+                });
+            }
+        }
+
+        function wrapText(context, text, x, y, maxWidth, lineHeight) {
+            let words = text.split(' ');
+            let line = '';
+            for(let n = 0; n < words.length; n++) {
+                let testLine = line + words[n] + ' ';
+                let metrics = context.measureText(testLine);
+                if (metrics.width > maxWidth && n > 0) {
+                    context.fillText(line, x, y);
+                    line = words[n] + ' ';
+                    y += lineHeight;
+                } else {
+                    line = testLine;
+                }
+            }
+            context.fillText(line, x, y);
+        }
+
         function gameLoop() {
             if (!isPlaying) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             frameCount++;
-            drawStars(); // Draws background and stars
 
-            // Player Movement
-            if (keys['ArrowLeft'] || keys['a']) player.x -= playerSpeed;
-            if (keys['ArrowRight'] || keys['d']) player.x += playerSpeed;
-            if (keys[' '] || keys['ArrowUp']) player.isFiring = true;
-            else player.isFiring = false;
-
-            if (player.x < 0) player.x = 0;
-            if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
-
-            // Firing Logic
-            if (player.isFiring && (frameCount - lastFired) > fireRate) {
-                // Dual blasters for a modern look
-                bullets.push({ x: player.x + (player.width * 0.2) - 2, y: player.y + 10, width: 4, height: 15 });
-                bullets.push({ x: player.x + (player.width * 0.8) - 2, y: player.y + 10, width: 4, height: 15 });
-                lastFired = frameCount;
+            ctx.fillStyle = '#ffffff';
+            if(frameCount % 10 === 0) {
+                ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 2, 2);
             }
 
-            // Draw Ship
-            drawShip(player.x, player.y, player.width, player.height);
+            if (!isTransitioning) {
+                if (keys['ArrowLeft'] || keys['a']) player.x -= playerSpeed;
+                if (keys['ArrowRight'] || keys['d']) player.x += playerSpeed;
+                if (keys[' '] || keys['ArrowUp']) player.isFiring = true;
+                else player.isFiring = false;
 
-            // Update & Draw Bullets
-            ctx.fillStyle = '#00e5ff';
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = '#00e5ff';
+                if (player.x < 0) player.x = 0;
+                if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
+
+                if (player.isFiring && frameCount % fireRate === 0) {
+                    bullets.push({ x: player.x + player.width / 2 - 3, y: player.y, width: 6, height: 20 });
+                }
+            }
+
+            ctx.fillStyle = '#00ffff';
+            ctx.beginPath();
+            ctx.moveTo(player.x + player.width / 2, player.y);
+            ctx.lineTo(player.x + player.width, player.y + player.height);
+            ctx.lineTo(player.x, player.y + player.height);
+            ctx.fill();
+
+            ctx.fillStyle = '#ff00ff';
             for (let i = bullets.length - 1; i >= 0; i--) {
                 let b = bullets[i];
                 b.y -= bulletSpeed;
-                ctx.beginPath();
-                ctx.roundRect(b.x, b.y, b.width, b.height, 2);
-                ctx.fill();
-                if (b.y < -20) bullets.splice(i, 1);
+                ctx.fillRect(b.x, b.y, b.width, b.height);
+                if (b.y < 0) bullets.splice(i, 1);
             }
-            ctx.shadowBlur = 0; // reset
 
-            // Update & Draw Particles
             for (let i = particles.length - 1; i >= 0; i--) {
                 let p = particles[i];
                 p.x += p.vx;
                 p.y += p.vy;
-                p.life -= 0.03; // Fade out speed
-                p.size *= 0.95; // Shrink
-                
-                if (p.life <= 0 || p.size <= 0.5) {
+                p.life -= 0.04;
+                if (p.life <= 0) {
                     particles.splice(i, 1);
                 } else {
-                    ctx.save();
                     ctx.globalAlpha = p.life;
                     ctx.fillStyle = p.color;
-                    ctx.shadowBlur = 10;
-                    ctx.shadowColor = p.color;
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.restore();
+                    ctx.fillRect(p.x, p.y, 5, 5);
+                    ctx.globalAlpha = 1.0;
                 }
             }
 
-            // Update & Draw Blocks
-            let advanceToNext = false;
-            for (let i = blocks.length - 1; i >= 0; i--) {
-                let blk = blocks[i];
-                blk.y += blk.speed;
+            if (!isTransitioning) {
+                for (let i = blocks.length - 1; i >= 0; i--) {
+                    let blk = blocks[i];
+                    blk.y += blockFallSpeed;
 
-                drawGlowingBlock(blk.x, blk.y, blk.width, blk.height, blk.text);
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 2;
+                    ctx.fillRect(blk.x, blk.y, blk.width, blk.height);
+                    ctx.strokeRect(blk.x, blk.y, blk.width, blk.height);
+                    
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 16px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    
+                    wrapText(ctx, blk.text, blk.x + blk.width/2, blk.y + 25, blk.width - 10, 22);
 
-                // Collision with bottom (Missed block)
-                if (blk.y > canvas.height) {
-                    if (blk.isCorrect) {
-                        lives--;
-                        updateHUD();
-                        advanceToNext = true; // Correct answer missed, move on
-                    }
-                    blocks.splice(i, 1);
-                    continue;
-                }
-
-                // Collision with bullets
-                for (let j = bullets.length - 1; j >= 0; j--) {
-                    let b = bullets[j];
-                    if (b.x < blk.x + blk.width && b.x + b.width > blk.x &&
-                        b.y < blk.y + blk.height && b.y + b.height > blk.y) {
-                        
-                        bullets.splice(j, 1);
-                        createExplosion(blk.x + blk.width/2, blk.y + blk.height/2, blk.isCorrect);
-                        
+                    if (blk.y > canvas.height) {
                         if (blk.isCorrect) {
-                            score += 10;
-                            advanceToNext = true; 
-                        } else {
                             lives--;
+                            updateHUD();
+                            blocks = []; 
+                            if(lives > 0) setTimeout(loadNextQuestion, 500);
+                        } else {
+                            blocks.splice(i, 1); 
                         }
-                        
-                        blocks.splice(i, 1);
-                        updateHUD();
-                        break;
+                        continue;
+                    }
+
+                    for (let j = bullets.length - 1; j >= 0; j--) {
+                        let b = bullets[j];
+                        if (b.x < blk.x + blk.width && b.x + b.width > blk.x &&
+                            b.y < blk.y + blk.height && b.y + b.height > blk.y) {
+                            
+                            bullets.splice(j, 1);
+                            createExplosion(blk.x + blk.width/2, blk.y + blk.height/2, blk.isCorrect ? '#00ffff' : '#ff0000');
+                            
+                            if (blk.isCorrect) {
+                                handleCorrectAnswer(); 
+                            } else {
+                                lives--;
+                                updateHUD();
+                                blocks.splice(i, 1); 
+                            }
+                            break;
+                        }
                     }
                 }
             }
 
-            // State Checks
-            if (lives <= 0) {
+            if (lives <= 0 && !isTransitioning) {
                 isPlaying = false;
-                hud.style.display = 'none';
-                questionDisplay.style.display = 'none';
+                topBar.style.display = 'none';
                 mobileControls.style.display = 'none';
+                feedbackMsg.style.display = 'none';
                 gameOverScreen.style.display = 'block';
                 finalScoreDisplay.innerText = `Score: ${score}`;
-            } else if (advanceToNext) {
-                blocks = []; // Clear remaining wrong options
-                setTimeout(loadNextQuestion, 600); // Short pause before next question drops
-            } else if (blocks.length === 0 && frameCount > 100) {
-                // Edge case catch if blocks are empty but game didn't advance
-                setTimeout(loadNextQuestion, 600);
             }
 
             if (isPlaying) requestAnimationFrame(gameLoop);
         }
-        
-        // Ensure initial rendering sizing
-        resize();
     </script>
 </body>
 </html>
